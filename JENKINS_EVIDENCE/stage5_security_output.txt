@@ -1,0 +1,116 @@
+============================================================
+  MindBridge CI/CD Pipeline — Stage 5: Security Scan
+  Run Date: Fri May 22 07:55:03 WCAST 2026
+  bandit: python.exe -m bandit 1.9.4
+  python version = 3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]
+============================================================
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.14.0
+Run started:2026-05-22 06:55:05.664427+00:00
+Files in scope (39):
+	app/__init__.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/config.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/database.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/limiter.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/main.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/middleware\__init__.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/middleware\auth.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/middleware\roles.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/models\__init__.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/models\crisis.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/models\forum.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/models\journal.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/models\mood.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/models\resource.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/models\user.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/routes\__init__.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/routes\ai.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/routes\auth.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/routes\crisis.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/routes\forum.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/routes\journal.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/routes\mood.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/routes\resources.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/schemas\__init__.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/schemas\crisis.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/schemas\forum.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/schemas\journal.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/schemas\mood.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/schemas\resource.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/schemas\user.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/services\__init__.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/services\ai_service.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/services\auth_service.py (score: {SEVERITY: 6, CONFIDENCE: 10})
+	app/services\crisis_service.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/services\email_service.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/services\forum_service.py (score: {SEVERITY: 6, CONFIDENCE: 20})
+	app/services\journal_service.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/services\mood_service.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+	app/services\resource_service.py (score: {SEVERITY: 0, CONFIDENCE: 0})
+Files excluded (39):
+	app/__pycache__\__init__.cpython-314.pyc
+	app/__pycache__\config.cpython-314.pyc
+	app/__pycache__\database.cpython-314.pyc
+	app/__pycache__\limiter.cpython-314.pyc
+	app/__pycache__\main.cpython-314.pyc
+	app/middleware\__pycache__\__init__.cpython-314.pyc
+	app/middleware\__pycache__\auth.cpython-314.pyc
+	app/middleware\__pycache__\roles.cpython-314.pyc
+	app/models\__pycache__\__init__.cpython-314.pyc
+	app/models\__pycache__\crisis.cpython-314.pyc
+	app/models\__pycache__\forum.cpython-314.pyc
+	app/models\__pycache__\journal.cpython-314.pyc
+	app/models\__pycache__\mood.cpython-314.pyc
+	app/models\__pycache__\resource.cpython-314.pyc
+	app/models\__pycache__\user.cpython-314.pyc
+	app/routes\__pycache__\__init__.cpython-314.pyc
+	app/routes\__pycache__\ai.cpython-314.pyc
+	app/routes\__pycache__\auth.cpython-314.pyc
+	app/routes\__pycache__\crisis.cpython-314.pyc
+	app/routes\__pycache__\forum.cpython-314.pyc
+	app/routes\__pycache__\journal.cpython-314.pyc
+	app/routes\__pycache__\mood.cpython-314.pyc
+	app/routes\__pycache__\resources.cpython-314.pyc
+	app/schemas\__pycache__\__init__.cpython-314.pyc
+	app/schemas\__pycache__\crisis.cpython-314.pyc
+	app/schemas\__pycache__\forum.cpython-314.pyc
+	app/schemas\__pycache__\journal.cpython-314.pyc
+	app/schemas\__pycache__\mood.cpython-314.pyc
+	app/schemas\__pycache__\resource.cpython-314.pyc
+	app/schemas\__pycache__\user.cpython-314.pyc
+	app/services\__pycache__\__init__.cpython-314.pyc
+	app/services\__pycache__\ai_service.cpython-314.pyc
+	app/services\__pycache__\auth_service.cpython-314.pyc
+	app/services\__pycache__\crisis_service.cpython-314.pyc
+	app/services\__pycache__\email_service.cpython-314.pyc
+	app/services\__pycache__\forum_service.cpython-314.pyc
+	app/services\__pycache__\journal_service.cpython-314.pyc
+	app/services\__pycache__\mood_service.cpython-314.pyc
+	app/services\__pycache__\resource_service.cpython-314.pyc
+
+Test results:
+	No issues identified.
+
+Code scanned:
+	Total lines of code: 2124
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 4
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 2
+		High: 2
+Files skipped (0):
+
+PIPELINE GATE: 0 HIGH severity issues found.
+RESULT: Stage 5 PASSED

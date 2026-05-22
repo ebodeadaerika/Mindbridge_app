@@ -1,0 +1,149 @@
+============================================================
+  MindBridge CI/CD Pipeline — Stage 4: Test
+  Run Date: Fri May 22 07:54:03 WCAST 2026
+  Python: Python 3.14.0
+  pytest: pytest 9.0.3
+============================================================
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.0.3, pluggy-1.6.0 -- C:\Python314\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\bigchella\Downloads\MindBridge_Complete_Project\MindBridge_Project\mindbridge-backend
+configfile: pytest.ini
+plugins: anyio-4.13.0, cov-7.1.0
+collecting ... collected 65 items
+
+tests/test_auth.py::TestRegister::test_register_success PASSED           [  1%]
+tests/test_auth.py::TestRegister::test_register_duplicate_email PASSED   [  3%]
+tests/test_auth.py::TestRegister::test_register_short_password PASSED    [  4%]
+tests/test_auth.py::TestRegister::test_register_invalid_email PASSED     [  6%]
+tests/test_auth.py::TestRegister::test_register_with_university PASSED   [  7%]
+tests/test_auth.py::TestLogin::test_login_success PASSED                 [  9%]
+tests/test_auth.py::TestLogin::test_login_wrong_password PASSED          [ 10%]
+tests/test_auth.py::TestLogin::test_login_nonexistent_email PASSED       [ 12%]
+tests/test_auth.py::TestProfile::test_get_me PASSED                      [ 13%]
+tests/test_auth.py::TestProfile::test_get_me_no_token PASSED             [ 15%]
+tests/test_auth.py::TestProfile::test_update_me PASSED                   [ 16%]
+tests/test_auth.py::TestProfile::test_update_me_invalid_token PASSED     [ 18%]
+tests/test_auth.py::TestHealthCheck::test_health_endpoint PASSED         [ 20%]
+tests/test_crisis.py::TestCrisisSubmission::test_submit_flag_low PASSED  [ 21%]
+tests/test_crisis.py::TestCrisisSubmission::test_submit_flag_high_no_message PASSED [ 23%]
+tests/test_crisis.py::TestCrisisSubmission::test_submit_flag_no_identity PASSED [ 24%]
+tests/test_crisis.py::TestCrisisSubmission::test_submit_flag_invalid_severity PASSED [ 26%]
+tests/test_crisis.py::TestCrisisSubmission::test_submit_flag_requires_auth PASSED [ 27%]
+tests/test_crisis.py::TestCrisisAdmin::test_admin_list_all_alerts PASSED [ 29%]
+tests/test_crisis.py::TestCrisisAdmin::test_admin_filter_pending PASSED  [ 30%]
+tests/test_crisis.py::TestCrisisAdmin::test_student_cannot_view_alerts PASSED [ 32%]
+tests/test_crisis.py::TestCrisisAdmin::test_resolve_flag PASSED          [ 33%]
+tests/test_crisis.py::TestCrisisAdmin::test_resolve_already_resolved PASSED [ 35%]
+tests/test_crisis.py::TestCrisisAdmin::test_resolve_nonexistent_flag PASSED [ 36%]
+tests/test_forum.py::TestForumPosts::test_list_posts_empty PASSED        [ 38%]
+tests/test_forum.py::TestForumPosts::test_create_post PASSED             [ 40%]
+tests/test_forum.py::TestForumPosts::test_post_has_anonymous_name PASSED [ 41%]
+tests/test_forum.py::TestForumPosts::test_list_posts_after_create PASSED [ 43%]
+tests/test_forum.py::TestForumPosts::test_filter_by_category PASSED      [ 44%]
+tests/test_forum.py::TestForumPosts::test_post_body_max_500 PASSED       [ 46%]
+tests/test_forum.py::TestForumReplies::test_add_reply PASSED             [ 47%]
+tests/test_forum.py::TestForumReplies::test_reply_to_nonexistent_post PASSED [ 49%]
+tests/test_forum.py::TestForumReplies::test_get_post_detail_with_replies PASSED [ 50%]
+tests/test_forum.py::TestForumModeration::test_admin_can_delete_post PASSED [ 52%]
+tests/test_forum.py::TestForumModeration::test_student_cannot_delete_post PASSED [ 53%]
+tests/test_journal.py::TestJournalCRUD::test_create_entry PASSED         [ 55%]
+tests/test_journal.py::TestJournalCRUD::test_list_entries_empty PASSED   [ 56%]
+tests/test_journal.py::TestJournalCRUD::test_list_entries_after_create PASSED [ 58%]
+tests/test_journal.py::TestJournalCRUD::test_get_single_entry PASSED     [ 60%]
+tests/test_journal.py::TestJournalCRUD::test_update_entry PASSED         [ 61%]
+tests/test_journal.py::TestJournalCRUD::test_delete_entry PASSED         [ 63%]
+tests/test_journal.py::TestJournalPrivacy::test_admin_cannot_list_entries PASSED [ 64%]
+tests/test_journal.py::TestJournalPrivacy::test_cross_user_access_blocked PASSED [ 66%]
+tests/test_mood.py::TestMoodCheckin::test_checkin_success PASSED         [ 67%]
+tests/test_mood.py::TestMoodCheckin::test_checkin_no_note PASSED         [ 69%]
+tests/test_mood.py::TestMoodCheckin::test_checkin_invalid_score PASSED   [ 70%]
+tests/test_mood.py::TestMoodCheckin::test_checkin_duplicate_today PASSED [ 72%]
+tests/test_mood.py::TestMoodCheckin::test_checkin_requires_auth PASSED   [ 73%]
+tests/test_mood.py::TestMoodCheckin::test_checkin_admin_forbidden PASSED [ 75%]
+tests/test_mood.py::TestMoodHistory::test_history_empty PASSED           [ 76%]
+tests/test_mood.py::TestMoodHistory::test_history_after_checkin PASSED   [ 78%]
+tests/test_mood.py::TestMoodHistory::test_history_requires_student PASSED [ 80%]
+tests/test_mood.py::TestMoodTrends::test_trends_admin_access PASSED      [ 81%]
+tests/test_mood.py::TestMoodTrends::test_trends_student_forbidden PASSED [ 83%]
+tests/test_mood.py::TestMoodTrends::test_trends_no_individual_entries PASSED [ 84%]
+tests/test_resources.py::TestResourceListing::test_list_resources_empty PASSED [ 86%]
+tests/test_resources.py::TestResourceListing::test_list_resources_with_data PASSED [ 87%]
+tests/test_resources.py::TestResourceListing::test_filter_by_category PASSED [ 89%]
+tests/test_resources.py::TestResourceListing::test_list_requires_auth PASSED [ 90%]
+tests/test_resources.py::TestResourceAdmin::test_admin_create_resource PASSED [ 92%]
+tests/test_resources.py::TestResourceAdmin::test_student_cannot_create_resource PASSED [ 93%]
+tests/test_resources.py::TestResourceAdmin::test_admin_update_resource PASSED [ 95%]
+tests/test_resources.py::TestResourceAdmin::test_admin_delete_resource PASSED [ 96%]
+tests/test_resources.py::TestResourceAdmin::test_delete_nonexistent_resource PASSED [ 98%]
+tests/test_resources.py::TestResourceAdmin::test_invalid_category_rejected PASSED [100%]
+
+============================== warnings summary ===============================
+app\config.py:9
+  C:\Users\bigchella\Downloads\MindBridge_Complete_Project\MindBridge_Project\mindbridge-backend\app\config.py:9: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+    class Settings(BaseSettings):
+
+..\..\..\..\AppData\Roaming\Python\Python314\site-packages\slowapi\extension.py:717: 11 warnings
+  C:\Users\bigchella\AppData\Roaming\Python\Python314\site-packages\slowapi\extension.py:717: DeprecationWarning: 'asyncio.iscoroutinefunction' is deprecated and slated for removal in Python 3.16; use inspect.iscoroutinefunction() instead
+    if asyncio.iscoroutinefunction(func):
+
+..\..\..\..\AppData\Roaming\Python\Python314\site-packages\_pytest\config\__init__.py:1434
+  C:\Users\bigchella\AppData\Roaming\Python\Python314\site-packages\_pytest\config\__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+tests/test_crisis.py: 8 warnings
+tests/test_journal.py: 15 warnings
+  C:\Users\bigchella\AppData\Roaming\Python\Python314\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.14.0-final-0 _______________
+
+Name                               Stmts   Miss  Cover   Missing
+----------------------------------------------------------------
+app\__init__.py                        0      0   100%
+app\config.py                         37      0   100%
+app\database.py                       11      4    64%   34-38
+app\limiter.py                         3      0   100%
+app\main.py                           33      4    88%   86, 100-102
+app\middleware\__init__.py             0      0   100%
+app\middleware\auth.py                24      2    92%   44, 53
+app\middleware\roles.py               13      0   100%
+app\models\__init__.py                 7      0   100%
+app\models\crisis.py                  20      1    95%   31
+app\models\forum.py                   38      3    92%   31, 47, 73
+app\models\journal.py                 17      1    94%   28
+app\models\mood.py                    17      1    94%   33
+app\models\resource.py                24      1    96%   37
+app\models\user.py                    27      1    96%   41
+app\routes\__init__.py                 0      0   100%
+app\routes\ai.py                      19      3    84%   47-49
+app\routes\auth.py                    44      6    86%   52, 86, 97-98, 108, 120
+app\routes\crisis.py                  21      0   100%
+app\routes\forum.py                   32      1    97%   94
+app\routes\journal.py                 24      0   100%
+app\routes\mood.py                    17      0   100%
+app\routes\resources.py               23      0   100%
+app\schemas\__init__.py                6      0   100%
+app\schemas\crisis.py                 14      0   100%
+app\schemas\forum.py                  39      2    95%   21, 33
+app\schemas\journal.py                29      3    90%   21, 33, 36
+app\schemas\mood.py                   13      0   100%
+app\schemas\resource.py               26      1    96%   22
+app\schemas\user.py                  108     32    70%   40-50, 67, 74, 80, 92, 94, 114-116, 122, 125, 163-174, 188-194
+app\services\__init__.py               0      0   100%
+app\services\ai_service.py            31     23    26%   45-46, 55-103
+app\services\auth_service.py         134     76    43%   53-61, 141-175, 183, 187, 189, 191, 205-220, 228-253, 265-319, 331-333
+app\services\crisis_service.py        31      0   100%
+app\services\email_service.py         25     18    28%   22-80
+app\services\forum_service.py         93     16    83%   114, 141-167, 208
+app\services\journal_service.py       37      1    97%   58
+app\services\mood_service.py          40      0   100%
+app\services\resource_service.py      41      3    93%   48, 50, 52
+----------------------------------------------------------------
+TOTAL                               1118    203    82%
+Coverage HTML written to dir htmlcov
+Required test coverage of 80% reached. Total coverage: 81.84%
+====================== 65 passed, 36 warnings in 35.97s =======================
