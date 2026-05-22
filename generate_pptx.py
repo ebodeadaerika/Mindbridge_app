@@ -115,7 +115,7 @@ tb_box = add_rect(sl, Inches(3.5), Inches(4.6), Inches(6.33), Inches(1.7), BLUE_
 add_textbox(sl, Inches(3.6), Inches(4.7), Inches(6.1), Inches(0.35),
             'Team', 13, bold=True, color=ACCENT, align=PP_ALIGN.CENTER)
 add_textbox(sl, Inches(3.6), Inches(5.05), Inches(6.1), Inches(1.1),
-            'Member 1 — Backend & Testing\nMember 2 — Frontend & UX\nMember 3 — DevOps & Infrastructure\nMember 4 — Documentation & Scrum',
+            'EBODE ADA ERIKA ALEXANDRA  (ICTU20233909)  —  Team Leader\nAJA CHELLA ASAMBA JR  (ICTU20233787)  —  Developer & DevOps',
             12, color=WHITE, align=PP_ALIGN.CENTER)
 
 # ─────────────────────────────────────────────────────────────────────────────

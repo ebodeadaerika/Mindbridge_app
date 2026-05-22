@@ -307,9 +307,9 @@ The API is fully documented via **Swagger UI** at `/docs` when the server is run
 
 ## 👥 Team
 
-- Team Member 1 — Backend Architecture
-- Team Member 2 — Frontend & UX
-- Team Member 3 — DevOps & Infrastructure
-- Team Member 4 — Testing & Documentation
+| Name | Matricule | Role |
+|------|-----------|------|
+| EBODE ADA ERIKA ALEXANDRA | ICTU20233909 | Team Leader · Backend Architecture & Testing |
+| AJA CHELLA ASAMBA JR | ICTU20233787 | Frontend · DevOps & Infrastructure |
 
 *ICT University of Cameroon — Spring 2026*

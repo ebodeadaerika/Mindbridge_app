@@ -6,14 +6,10 @@
 
 ## Scrum Team
 
-| Role | Responsibility |
-|------|---------------|
-| Product Owner | Defines user stories, prioritises backlog, signs off features |
-| Scrum Master | Facilitates ceremonies, removes blockers |
-| Dev 1 (Backend) | FastAPI, PostgreSQL, authentication, services |
-| Dev 2 (Frontend) | React, TypeScript, UI pages |
-| Dev 3 (DevOps) | Docker, Kubernetes, Jenkins, Ansible, monitoring |
-| Dev 4 (QA/Docs) | PyTest suite, documentation, architecture diagrams |
+| Name | Matricule | Role | Responsibilities |
+|------|-----------|------|-----------------|
+| EBODE ADA ERIKA ALEXANDRA | ICTU20233909 | Team Leader / Product Owner / Scrum Master | Backlog management, sprint planning, FastAPI backend, authentication, testing |
+| AJA CHELLA ASAMBA JR | ICTU20233787 | Developer (Full-Stack + DevOps) | React frontend, Docker, Kubernetes, Jenkins, Ansible, monitoring, documentation |
 
 ---
 

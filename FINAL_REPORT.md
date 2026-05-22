@@ -8,12 +8,10 @@
 
 **Team Members:**
 
-| Name | Student ID | Role |
+| Name | Matricule | Role |
 |------|-----------|------|
-| Team Member 1 | — | Backend Architecture & Testing |
-| Team Member 2 | — | Frontend Development & UX |
-| Team Member 3 | — | DevOps & Infrastructure |
-| Team Member 4 | — | Documentation & Scrum Master |
+| EBODE ADA ERIKA ALEXANDRA | ICTU20233909 | Team Leader · Backend Architecture & Testing |
+| AJA CHELLA ASAMBA JR | ICTU20233787 | Frontend · DevOps & Infrastructure |
 
 **Supervisor:** Engr. TEKOH PALMA  
 **Submission Date:** May 2026
