@@ -14,11 +14,10 @@ services:
     environment:
       POSTGRES_DB: mindbridge_db
       POSTGRES_USER: mindbridge_user
-      POSTGRES_PASSWORD: mindbridge_pass
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mindbridge_pass}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # Port NOT exposed publicly — internal network only
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U mindbridge_user -d mindbridge_db"]
       interval: 10s
@@ -37,16 +36,14 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      DATABASE_URL: postgresql://mindbridge_user:mindbridge_pass@db:5432/mindbridge_db
-      ENVIRONMENT: development
+      DATABASE_URL: postgresql://mindbridge_user:${DB_PASSWORD:-mindbridge_pass}@db:5432/mindbridge_db
+      ENVIRONMENT: production
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - .:/app  # Hot reload in development
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
     networks:
       - mindbridge_network
 

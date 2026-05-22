@@ -37,6 +37,9 @@ yarn-error.log*
 # Kubernetes secrets (never commit real secrets)
 k8s/secrets-real.yaml
 
+# Ansible production secrets (never commit real secrets)
+mindbridge-backend/ansible/vars/production.yml
+
 # IDE
 .vscode/
 .idea/

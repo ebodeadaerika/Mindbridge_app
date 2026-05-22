@@ -1,6 +1,6 @@
 ---
 # ── MindBridge — Ansible Playbook 2: Deploy Application ──────────────────────
-# Section 5 (2.5 marks) — Starts containers, configures Nginx reverse proxy
+# Section 5 (2.5 marks) — Copies code, starts containers, configures Nginx
 # Run: ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/deploy_app.yml
 
 - name: MindBridge — Deploy Application
@@ -8,10 +8,12 @@
   become: true
   gather_facts: true
 
+  vars_files:
+    - "{{ playbook_dir }}/../vars/production.yml"
+
   vars:
     app_dir: /opt/mindbridge
-    git_repo: "https://github.com/your-team/mindbridge-backend.git"
-    git_branch: main
+    local_src: "{{ playbook_dir }}/../../"   # mindbridge-backend/ folder
 
   tasks:
 
@@ -24,36 +26,48 @@
         group: ubuntu
         mode: "0755"
 
-    # ── Clone / Pull Code ───────────────────────────────────────────────────
-    - name: Clone or update application code
-      git:
-        repo: "{{ git_repo }}"
-        dest: "{{ app_dir }}"
-        version: "{{ git_branch }}"
-        force: yes
-      become_user: ubuntu
+    # ── Sync Code to VPS (no GitHub required) ──────────────────────────────
+    - name: Sync application code to server
+      synchronize:
+        src: "{{ local_src }}"
+        dest: "{{ app_dir }}/"
+        delete: yes
+        rsync_opts:
+          - "--exclude=.git"
+          - "--exclude=__pycache__"
+          - "--exclude=*.pyc"
+          - "--exclude=.env"
+          - "--exclude=htmlcov"
+          - "--exclude=.pytest_cache"
+          - "--exclude=node_modules"
+          - "--exclude=venv"
+          - "--exclude=.venv"
+      become: false
 
     # ── Environment File ────────────────────────────────────────────────────
-    - name: Copy .env file to server
+    - name: Deploy .env file from template
       template:
-        src: templates/.env.j2
+        src: "{{ playbook_dir }}/../templates/.env.j2"
         dest: "{{ app_dir }}/.env"
         owner: ubuntu
         group: ubuntu
         mode: "0600"
-      notify: Restart containers
 
     # ── Docker Compose ──────────────────────────────────────────────────────
-    - name: Pull latest Docker images
-      command: docker compose pull
+    - name: Build and start containers
+      command: docker compose up -d --build
       args:
         chdir: "{{ app_dir }}"
       become_user: ubuntu
 
-    - name: Start application containers
-      command: docker compose up -d --build
+    - name: Wait for database to be ready
+      command: docker compose exec -T db pg_isready -U mindbridge_user -d mindbridge_db
       args:
         chdir: "{{ app_dir }}"
+      register: db_ready
+      until: db_ready.rc == 0
+      retries: 12
+      delay: 5
       become_user: ubuntu
 
     - name: Run database migrations
@@ -61,49 +75,45 @@
       args:
         chdir: "{{ app_dir }}"
       become_user: ubuntu
-      retries: 3
-      delay: 5
 
     # ── Nginx Reverse Proxy ─────────────────────────────────────────────────
-    - name: Create Nginx configuration for MindBridge
+    - name: Deploy Nginx configuration
       copy:
         dest: /etc/nginx/sites-available/mindbridge
         content: |
           server {
               listen 80;
               server_name _;
+              client_max_body_size 10M;
 
-              # API proxy
-              location /api/ {
-                  proxy_pass http://127.0.0.1:8000;
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $scheme;
+              # API — all /api/ and /docs /health /metrics routes
+              location ~ ^/(api|docs|redoc|openapi.json|health|metrics) {
+                  proxy_pass         http://127.0.0.1:8000;
+                  proxy_set_header   Host              $host;
+                  proxy_set_header   X-Real-IP         $remote_addr;
+                  proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+                  proxy_set_header   X-Forwarded-Proto $scheme;
                   proxy_read_timeout 60s;
               }
 
-              # Swagger docs
-              location /docs {
-                  proxy_pass http://127.0.0.1:8000;
+              # Grafana
+              location /grafana/ {
+                  proxy_pass http://127.0.0.1:3001/;
                   proxy_set_header Host $host;
               }
 
-              # Health check
-              location /health {
-                  proxy_pass http://127.0.0.1:8000;
-              }
-
-              # Frontend (if serving static files)
+              # Frontend — SPA catch-all
               location / {
-                  root /opt/mindbridge/frontend-dist;
-                  try_files $uri $uri/ /index.html;
+                  proxy_pass http://127.0.0.1:5173;
+                  proxy_set_header Host $host;
+                  proxy_set_header Upgrade    $http_upgrade;
+                  proxy_set_header Connection "upgrade";
               }
           }
 
-    - name: Enable site configuration
+    - name: Enable MindBridge site
       file:
-        src: /etc/nginx/sites-available/mindbridge
+        src:  /etc/nginx/sites-available/mindbridge
         dest: /etc/nginx/sites-enabled/mindbridge
         state: link
 
@@ -111,10 +121,10 @@
       file:
         path: /etc/nginx/sites-enabled/default
         state: absent
+      ignore_errors: true
 
-    - name: Test Nginx configuration
+    - name: Test Nginx config
       command: nginx -t
-      register: nginx_test
       changed_when: false
 
     - name: Reload Nginx
@@ -122,28 +132,37 @@
         name: nginx
         state: reloaded
 
-    # ── Verification ────────────────────────────────────────────────────────
-    - name: Wait for API to be ready
+    # ── UFW — allow port 8000 for direct API access ─────────────────────────
+    - name: Allow port 8000 (API direct access)
+      ufw:
+        rule: allow
+        port: "8000"
+
+    # ── Health check ────────────────────────────────────────────────────────
+    - name: Wait for API health endpoint
       uri:
         url: http://localhost:8000/health
         method: GET
         status_code: 200
-      retries: 10
+      retries: 12
       delay: 5
-      register: health_check
-      until: health_check.status == 200
+      register: health
+      until: health.status == 200
 
-    - name: Display deployment status
+    - name: Deployment complete
       debug:
         msg: |
-          ✅ MindBridge deployed successfully!
-          API:    http://{{ ansible_host }}/api/v1
-          Docs:   http://{{ ansible_host }}/docs
-          Health: http://{{ ansible_host }}/health
+          ============================================================
+          MindBridge deployed successfully!
+          API:      http://{{ ansible_host }}/api/v1
+          Docs:     http://{{ ansible_host }}/docs
+          Health:   http://{{ ansible_host }}/health
+          Grafana:  http://{{ ansible_host }}:3001  (admin/mindbridge123)
+          Prometheus: http://{{ ansible_host }}:9090
+          ============================================================
 
-  # ── Handlers ───────────────────────────────────────────────────────────────
   handlers:
-    - name: Restart containers
+    - name: restart containers
       command: docker compose restart
       args:
         chdir: "{{ app_dir }}"

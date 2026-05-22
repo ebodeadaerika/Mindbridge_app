@@ -33,6 +33,7 @@
           - git
           - wget
           - ufw
+          - rsync
         state: present
 
     # ── Docker Installation ─────────────────────────────────────────────────
@@ -56,9 +57,18 @@
         state: present
         update_cache: yes
 
+    - name: Detect system architecture
+      command: uname -m
+      register: arch
+      changed_when: false
+
+    - name: Set Docker Compose binary name for architecture
+      set_fact:
+        compose_arch: "{{ 'aarch64' if arch.stdout == 'aarch64' else 'x86_64' }}"
+
     - name: Install Docker Compose plugin
       get_url:
-        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-x86_64"
+        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-linux-{{ compose_arch }}"
         dest: /usr/local/bin/docker-compose
         mode: "0755"
 
