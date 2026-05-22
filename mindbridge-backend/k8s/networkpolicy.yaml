@@ -1,0 +1,68 @@
+# ── MindBridge — NetworkPolicy ────────────────────────────────────────────────
+# Micro-segmentation: each tier can only talk to the tier it needs.
+# DB is ONLY reachable from the API — never from the frontend or outside.
+# Apply: kubectl apply -f k8s/networkpolicy.yaml -n mindbridge
+
+---
+# PostgreSQL — only the API may connect on port 5432
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-allow-only-api
+  namespace: mindbridge
+spec:
+  podSelector:
+    matchLabels:
+      component: db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              component: api
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# API — accept traffic from frontend and ingress controller only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-allow-frontend-and-ingress
+  namespace: mindbridge
+spec:
+  podSelector:
+    matchLabels:
+      component: api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              component: frontend
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+
+---
+# Frontend — accept traffic from ingress controller only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-allow-ingress
+  namespace: mindbridge
+spec:
+  podSelector:
+    matchLabels:
+      component: frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx

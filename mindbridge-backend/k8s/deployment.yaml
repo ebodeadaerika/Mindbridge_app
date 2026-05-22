@@ -1,0 +1,94 @@
+# ── MindBridge — API Kubernetes Deployment ────────────────────────────────────
+# Section 7 (15 marks) — 2+ replicas, rolling update, health probes, init container
+# Apply: kubectl apply -f k8s/deployment.yaml -n mindbridge
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindbridge-api
+  namespace: mindbridge
+  labels:
+    app: mindbridge
+    component: api
+    version: "1.0.0"
+spec:
+  replicas: 2          # NFR-11: minimum 2 running replicas at all times
+  selector:
+    matchLabels:
+      app: mindbridge
+      component: api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0  # NFR-12: zero-downtime rolling updates (no pods taken down before new ones are ready)
+      maxSurge: 1        # Allow 1 extra pod during rollout
+  template:
+    metadata:
+      labels:
+        app: mindbridge
+        component: api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Wait for DB to be ready before starting the API
+      initContainers:
+        - name: wait-for-db
+          image: postgres:15-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h mindbridge-db-service -U mindbridge_user -d mindbridge_db; do
+                echo "Waiting for PostgreSQL..."; sleep 2
+              done
+              echo "PostgreSQL is ready ✓"
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mindbridge-db-secrets
+                  key: POSTGRES_PASSWORD
+
+      containers:
+        - name: mindbridge-api
+          image: yourdockerhubuser/mindbridge-api:latest
+          imagePullPolicy: IfNotPresent   # IfNotPresent for Minikube local builds
+          # Uses Dockerfile CMD: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+          # On first deploy, initialize DB tables:
+          #   kubectl exec <pod> -n mindbridge -- python3 -c "from app.database import Base,engine; import app.models.user,app.models.mood,app.models.journal,app.models.forum,app.models.crisis,app.models.resource; Base.metadata.create_all(bind=engine)"
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: mindbridge-secrets
+            - configMapRef:
+                name: mindbridge-config
+          # Liveness probe — restart pod if app hangs
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 5
+          # Readiness probe — only send traffic when app is ready
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: 3
+            timeoutSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      restartPolicy: Always

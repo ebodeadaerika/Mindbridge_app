@@ -1,0 +1,11 @@
+# ── MindBridge — Namespace ────────────────────────────────────────────────────
+# Dedicated namespace isolates MindBridge resources from other workloads
+# Apply first: kubectl apply -f k8s/namespace.yaml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mindbridge
+  labels:
+    app: mindbridge
+    managed-by: kubectl

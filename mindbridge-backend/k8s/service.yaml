@@ -1,0 +1,96 @@
+# ── MindBridge — Kubernetes Services ─────────────────────────────────────────
+# API service (ClusterIP for internal) + PostgreSQL service
+
+---
+# FastAPI Service — internal cluster access
+apiVersion: v1
+kind: Service
+metadata:
+  name: mindbridge-api-service
+  namespace: mindbridge
+  labels:
+    app: mindbridge
+    component: api
+spec:
+  type: ClusterIP
+  selector:
+    app: mindbridge
+    component: api
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+
+---
+# PostgreSQL Service — internal only (NFR-09: DB not exposed publicly)
+apiVersion: v1
+kind: Service
+metadata:
+  name: mindbridge-db-service
+  namespace: mindbridge
+  labels:
+    app: mindbridge
+    component: db
+spec:
+  type: ClusterIP
+  selector:
+    app: mindbridge
+    component: db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+
+---
+# PostgreSQL Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mindbridge-db
+  namespace: mindbridge
+  labels:
+    app: mindbridge
+    component: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mindbridge
+      component: db
+  template:
+    metadata:
+      labels:
+        app: mindbridge
+        component: db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: mindbridge-db-secrets
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "mindbridge_user", "-d", "mindbridge_db"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: mindbridge-postgres-pvc

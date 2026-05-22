@@ -1,0 +1,102 @@
+# ── MindBridge — Nginx Ingress Controller ────────────────────────────────────
+# Routes external traffic: / → frontend, /api → backend, /docs → backend
+# Enable on Minikube: minikube addons enable ingress
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mindbridge-ingress
+  namespace: mindbridge
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"   # false for local Minikube; enable in prod
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    # Security headers are set via nginx.conf in the frontend container instead
+    # (nginx.ingress.kubernetes.io/configuration-snippet is disabled in default Minikube)
+spec:
+  rules:
+    - host: mindbridge.local   # Add to /etc/hosts: <minikube ip> mindbridge.local
+      http:
+        paths:
+          # API backend — no rewrite (paths stay as /api/v1/...)
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: mindbridge-api-service
+                port:
+                  number: 80
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: mindbridge-api-service
+                port:
+                  number: 80
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: mindbridge-api-service
+                port:
+                  number: 80
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: mindbridge-api-service
+                port:
+                  number: 80
+          # Frontend SPA — catch-all (must be last)
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mindbridge-frontend-service
+                port:
+                  number: 80
+
+---
+# ConfigMap — environment configuration (non-sensitive)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mindbridge-config
+  namespace: mindbridge
+data:
+  ENVIRONMENT: "production"
+  APP_NAME: "MindBridge"
+  APP_VERSION: "1.0.0"
+  ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "1440"
+  CORS_ORIGINS: "http://localhost:5173,https://mindbridge.local"
+  DB_POOL_SIZE: "5"
+  DB_MAX_OVERFLOW: "10"
+
+---
+# Secret — sensitive configuration (base64 encoded)
+# Generate values: echo -n "your-value" | base64
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mindbridge-secrets
+  namespace: mindbridge
+type: Opaque
+stringData:
+  SECRET_KEY: "change-this-to-a-strong-secret-in-production-minimum-32-chars"
+  DATABASE_URL: "postgresql://mindbridge_user:mindbridge_pass@mindbridge-db-service:5432/mindbridge_db"
+  AI_API_KEY: "your-anthropic-api-key-here"
+  AI_MODEL: "claude-sonnet-4-20250514"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mindbridge-db-secrets
+  namespace: mindbridge
+type: Opaque
+stringData:
+  POSTGRES_DB: "mindbridge_db"
+  POSTGRES_USER: "mindbridge_user"
+  POSTGRES_PASSWORD: "mindbridge_pass"

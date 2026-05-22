@@ -1,0 +1,32 @@
+# ── MindBridge — Kustomize ────────────────────────────────────────────────────
+# Apply the entire stack in one command:
+#   kubectl apply -k k8s/
+# Or with kustomize:
+#   kustomize build k8s/ | kubectl apply -f -
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: mindbridge
+
+resources:
+  # 1. Namespace first
+  - namespace.yaml
+  # 2. Storage
+  - pvc.yaml
+  # 3. Config and secrets (from ingress.yaml)
+  - ingress.yaml
+  # 4. Database
+  - service.yaml
+  # 5. API deployment
+  - deployment.yaml
+  # 6. Frontend
+  - frontend.yaml
+  # 7. Autoscaling
+  - hpa.yaml
+  # 8. Network policies
+  - networkpolicy.yaml
+
+commonLabels:
+  app: mindbridge
+  managed-by: kustomize

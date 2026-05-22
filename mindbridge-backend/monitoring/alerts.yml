@@ -1,0 +1,52 @@
+# ── MindBridge — Prometheus Alert Rules ──────────────────────────────────────
+# Section 4 — Monitoring alerts as defined in Architecture Notes
+
+groups:
+  - name: mindbridge_alerts
+    rules:
+
+      # High error rate — 5xx > 5% over 5 minutes (CRITICAL)
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m])) /
+          sum(rate(http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate on MindBridge API"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+
+      # Slow responses — p95 > 1000ms over 10 minutes (WARNING)
+      - alert: SlowResponses
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[10m])) by (le)
+          ) > 1.0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MindBridge API p95 response time > 1000ms"
+          description: "p95 latency is {{ $value | humanizeDuration }}."
+
+      # Pod down — replicas < 2 (CRITICAL)
+      - alert: PodDown
+        expr: kube_deployment_status_replicas_available{deployment="mindbridge-api"} < 2
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MindBridge API has fewer than 2 running replicas"
+          description: "Only {{ $value }} replicas are available."
+
+      # Crisis spike — flags > 5 in 1 hour (HIGH)
+      - alert: CrisisSpike
+        expr: |
+          increase(http_requests_total{handler="/api/v1/crisis/flag",method="POST",status="201"}[1h]) > 5
+        for: 0m
+        labels:
+          severity: high
+        annotations:
+          summary: "Crisis flag spike detected on MindBridge"
+          description: "{{ $value }} crisis flags submitted in the last hour. Counsellor attention needed."

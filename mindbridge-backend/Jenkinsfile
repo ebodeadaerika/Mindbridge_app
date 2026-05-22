@@ -1,0 +1,297 @@
+// ── MindBridge — Jenkinsfile ──────────────────────────────────────────────────
+// CI/CD Pipeline — SEN3244 Software Architecture, Section 3 (10 marks)
+// 9 Stages: Checkout → Build → Lint → Test → Security Scan →
+//            Docker Build → Docker Push → Deploy to K8s → Notify
+//
+// Prerequisites (Jenkins credentials):
+//   - DOCKER_HUB_CREDENTIALS : Docker Hub username/password
+//   - KUBECONFIG_FILE        : kubeconfig secret file for kubectl
+//
+// Jenkins global env vars:
+//   - DOCKER_HUB_USERNAME    : your Docker Hub username
+
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME        = 'mindbridge-api'
+        FRONTEND_NAME   = 'mindbridge-frontend'
+        DOCKER_REGISTRY = "${DOCKER_HUB_USERNAME}"
+        API_IMAGE       = "${DOCKER_REGISTRY}/${APP_NAME}"
+        FRONTEND_IMAGE  = "${DOCKER_REGISTRY}/${FRONTEND_NAME}"
+        IMAGE_TAG       = "${GIT_COMMIT[0..7]}"
+        K8S_NAMESPACE   = 'mindbridge'
+    }
+
+    options {
+        timeout(time: 45, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timestamps()
+        disableConcurrentBuilds()       // prevent parallel builds on same branch
+    }
+
+    stages {
+
+        // ── Stage 1: Checkout ──────────────────────────────────────────────
+        stage('Checkout') {
+            steps {
+                echo '📥 Checking out source code...'
+                checkout scm
+                sh 'git log --oneline -5'
+                sh 'git status'
+            }
+        }
+
+        // ── Stage 2: Build (Install Python Dependencies) ──────────────────
+        stage('Build') {
+            steps {
+                dir('mindbridge-backend') {
+                    echo '🔨 Installing Python dependencies...'
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install --upgrade pip
+                        pip install -r requirements.txt
+                    '''
+                }
+            }
+        }
+
+        // ── Stage 3: Lint (Code Quality) ──────────────────────────────────
+        stage('Lint') {
+            parallel {
+                stage('Python Lint') {
+                    steps {
+                        dir('mindbridge-backend') {
+                            echo '🔍 Running flake8 on Python code...'
+                            sh '''
+                                . venv/bin/activate
+                                flake8 app/ \
+                                    --max-line-length=120 \
+                                    --exclude=__pycache__,migrations \
+                                    --statistics \
+                                || true
+                            '''
+                        }
+                    }
+                }
+                stage('Frontend Lint') {
+                    steps {
+                        dir('mindbridge-frontend') {
+                            echo '🔍 Running TypeScript type-check...'
+                            sh '''
+                                npm ci --prefer-offline
+                                npx tsc --noEmit || true
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Stage 4: Test (PyTest + Coverage) ─────────────────────────────
+        stage('Test') {
+            environment {
+                DATABASE_URL                = 'sqlite:///:memory:'
+                SECRET_KEY                  = 'ci-only-secret-key-not-for-production-use-here'
+                ALGORITHM                   = 'HS256'
+                ACCESS_TOKEN_EXPIRE_MINUTES = '60'
+                REFRESH_TOKEN_EXPIRE_DAYS   = '30'
+                AI_API_KEY                  = 'ci-placeholder'
+                APP_NAME                    = 'MindBridge'
+                ENVIRONMENT                 = 'test'
+                CORS_ORIGINS                = 'http://localhost:5173'
+            }
+            steps {
+                dir('mindbridge-backend') {
+                    echo '🧪 Running test suite with coverage...'
+                    sh '''
+                        . venv/bin/activate
+                        pytest tests/ \
+                            --cov=app \
+                            --cov-report=html:htmlcov \
+                            --cov-report=xml:coverage.xml \
+                            --cov-report=term-missing \
+                            --cov-fail-under=80 \
+                            -v \
+                            --tb=short
+                    '''
+                }
+            }
+            post {
+                always {
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'mindbridge-backend/htmlcov',
+                        reportFiles: 'index.html',
+                        reportName: 'Coverage Report'
+                    ])
+                    archiveArtifacts artifacts: 'mindbridge-backend/coverage.xml', fingerprint: true
+                }
+            }
+        }
+
+        // ── Stage 5: Security Scan ─────────────────────────────────────────
+        stage('Security Scan') {
+            steps {
+                dir('mindbridge-backend') {
+                    echo '🔒 Running bandit security analysis...'
+                    sh '''
+                        . venv/bin/activate
+                        pip install bandit --quiet
+                        bandit -r app/ \
+                            -ll \
+                            --format json \
+                            -o bandit-report.json \
+                        || true
+                        cat bandit-report.json || true
+                    '''
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'mindbridge-backend/bandit-report.json',
+                                     allowEmptyArchive: true,
+                                     fingerprint: true
+                }
+            }
+        }
+
+        // ── Stage 6: Docker Build ──────────────────────────────────────────
+        stage('Docker Build') {
+            parallel {
+                stage('Build API Image') {
+                    steps {
+                        dir('mindbridge-backend') {
+                            echo '🐳 Building backend Docker image...'
+                            sh """
+                                docker build \
+                                    --tag ${API_IMAGE}:${IMAGE_TAG} \
+                                    --tag ${API_IMAGE}:latest \
+                                    --file Dockerfile \
+                                    --target production \
+                                    .
+                            """
+                        }
+                    }
+                }
+                stage('Build Frontend Image') {
+                    steps {
+                        dir('mindbridge-frontend') {
+                            echo '🐳 Building frontend Docker image...'
+                            sh """
+                                docker build \
+                                    --tag ${FRONTEND_IMAGE}:${IMAGE_TAG} \
+                                    --tag ${FRONTEND_IMAGE}:latest \
+                                    --file Dockerfile \
+                                    .
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Stage 7: Docker Push ───────────────────────────────────────────
+        stage('Docker Push') {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                    branch 'release/*'
+                }
+            }
+            steps {
+                echo '📤 Pushing images to Docker Hub...'
+                withCredentials([usernamePassword(
+                    credentialsId: 'DOCKER_HUB_CREDENTIALS',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                        docker push ${API_IMAGE}:${IMAGE_TAG}
+                        docker push ${API_IMAGE}:latest
+                        docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
+                        docker push ${FRONTEND_IMAGE}:latest
+                    """
+                }
+            }
+        }
+
+        // ── Stage 8: Deploy to Kubernetes ─────────────────────────────────
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo '🚀 Deploying to Kubernetes cluster...'
+                withCredentials([file(credentialsId: 'KUBECONFIG_FILE', variable: 'KUBECONFIG')]) {
+                    sh """
+                        export KUBECONFIG=${KUBECONFIG}
+
+                        # Ensure namespace exists
+                        kubectl apply -f mindbridge-backend/k8s/namespace.yaml
+
+                        # Apply all manifests
+                        kubectl apply -f mindbridge-backend/k8s/ -n ${K8S_NAMESPACE}
+
+                        # Rolling update API to new image tag
+                        kubectl set image deployment/mindbridge-api \
+                            mindbridge-api=${API_IMAGE}:${IMAGE_TAG} \
+                            -n ${K8S_NAMESPACE}
+
+                        # Rolling update frontend
+                        kubectl set image deployment/mindbridge-frontend \
+                            mindbridge-frontend=${FRONTEND_IMAGE}:${IMAGE_TAG} \
+                            -n ${K8S_NAMESPACE}
+
+                        # Wait for rollouts
+                        kubectl rollout status deployment/mindbridge-api \
+                            -n ${K8S_NAMESPACE} --timeout=120s
+                        kubectl rollout status deployment/mindbridge-frontend \
+                            -n ${K8S_NAMESPACE} --timeout=120s
+
+                        # Show final pod state
+                        kubectl get pods -n ${K8S_NAMESPACE}
+                    """
+                }
+            }
+        }
+
+    } // end stages
+
+    // ── Post-build Notifications ───────────────────────────────────────────
+    post {
+        success {
+            echo """
+╔══════════════════════════════════════╗
+║   ✅  Pipeline SUCCESS               ║
+╠══════════════════════════════════════╣
+║  Branch  : ${GIT_BRANCH}
+║  Commit  : ${IMAGE_TAG}
+║  Build   : #${BUILD_NUMBER}
+║  Images  : ${API_IMAGE}:${IMAGE_TAG}
+╚══════════════════════════════════════╝
+            """
+        }
+        failure {
+            echo """
+╔══════════════════════════════════════╗
+║   ❌  Pipeline FAILED                ║
+╠══════════════════════════════════════╣
+║  Branch  : ${GIT_BRANCH}
+║  Commit  : ${IMAGE_TAG}
+║  Build   : #${BUILD_NUMBER}
+║  → Check console output for details
+╚══════════════════════════════════════╝
+            """
+        }
+        always {
+            sh 'docker image prune -f || true'
+            cleanWs()
+        }
+    }
+}

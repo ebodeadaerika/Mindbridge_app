@@ -1,0 +1,1 @@
+"""MindBridge Backend — FastAPI Application"""

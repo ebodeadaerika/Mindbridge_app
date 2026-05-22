@@ -1,0 +1,28 @@
+# ── MindBridge — Prometheus Configuration ────────────────────────────────────
+# Section 4 (2.5 marks)
+# Scrapes metrics from the FastAPI /metrics endpoint (prometheus-fastapi-instrumentator)
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: "mindbridge-monitor"
+
+# ── Alerting Rules ────────────────────────────────────────────────────────────
+rule_files:
+  - "alerts.yml"
+
+# ── Scrape Targets ────────────────────────────────────────────────────────────
+scrape_configs:
+
+  # MindBridge FastAPI Application
+  - job_name: "mindbridge-api"
+    static_configs:
+      - targets: ["api:8000"]   # Docker service name
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
