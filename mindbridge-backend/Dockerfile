@@ -24,17 +24,21 @@ FROM deps AS production
 # Copy application source
 COPY . .
 
+# Make start.sh executable (used by Render.com startCommand)
+RUN chmod +x /app/start.sh
+
 # Create non-root user for security
 RUN adduser --disabled-password --gecos "" appuser && \
     chown -R appuser:appuser /app
 USER appuser
 
-# Expose application port
+# Expose application port (Render.com sets $PORT; default 8000 for Docker Compose)
 EXPOSE 8000
 
-# Health check for Kubernetes liveness/readiness probes
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+# Health check — works for both Docker Compose (fixed port 8000) and Render ($PORT)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${PORT:-8000}/health')" || exit 1
 
-# Start the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# Default start command (Docker Compose / Kubernetes).
+# Render overrides this via startCommand in render.yaml.
+CMD ["/app/start.sh"]
