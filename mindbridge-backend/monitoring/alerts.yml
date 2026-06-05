@@ -40,6 +40,18 @@ groups:
           summary: "MindBridge API has fewer than 2 running replicas"
           description: "Only {{ $value }} replicas are available."
 
+      # High memory — container memory > 85% (WARNING)
+      - alert: HighMemoryUsage
+        expr: |
+          sum(container_memory_working_set_bytes{pod=~"mindbridge-api.*"}) /
+          sum(kube_pod_container_resource_limits{resource="memory",pod=~"mindbridge-api.*"}) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MindBridge API memory usage above 85%"
+          description: "Memory at {{ $value | humanizePercentage }} — consider scaling up."
+
       # Crisis spike — flags > 5 in 1 hour (HIGH)
       - alert: CrisisSpike
         expr: |
