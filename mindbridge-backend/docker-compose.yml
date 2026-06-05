@@ -101,18 +101,6 @@ services:
     networks:
       - mindbridge_network
 
-  # ── Jenkins CI/CD ──────────────────────────────────────────────────────────
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: mindbridge_jenkins
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    volumes:
-      - jenkins_data:/var/jenkins_home
-    networks:
-      - mindbridge_network
-
   # ── Grafana Dashboards ──────────────────────────────────────────────────────
   grafana:
     image: grafana/grafana:10.4.0
@@ -139,8 +127,6 @@ volumes:
   prometheus_data:
     driver: local
   grafana_data:
-    driver: local
-  jenkins_data:
     driver: local
 
 # ── Networks ───────────────────────────────────────────────────────────────────
