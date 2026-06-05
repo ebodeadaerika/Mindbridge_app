@@ -3,8 +3,8 @@
 # Scrapes metrics from the FastAPI /metrics endpoint (prometheus-fastapi-instrumentator)
 
 global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
+  scrape_interval: 10s
+  evaluation_interval: 10s
   external_labels:
     monitor: "mindbridge-monitor"
 
@@ -20,7 +20,7 @@ scrape_configs:
     static_configs:
       - targets: ["api:8000"]   # Docker service name
     metrics_path: "/metrics"
-    scrape_interval: 15s
+    scrape_interval: 10s
 
   # Prometheus self-monitoring
   - job_name: "prometheus"
