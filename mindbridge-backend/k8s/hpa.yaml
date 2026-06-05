@@ -16,7 +16,7 @@ spec:
     kind: Deployment
     name: mindbridge-api
   minReplicas: 2
-  maxReplicas: 8
+  maxReplicas: 6
   metrics:
     # Scale on CPU utilization
     - type: Resource
