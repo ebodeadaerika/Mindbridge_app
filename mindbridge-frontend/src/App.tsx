@@ -38,6 +38,9 @@ import AdminCrisisAlerts from './pages/AdminCrisisAlerts';
 import AdminManageResources from './pages/AdminManageResources';
 import AdminForumModeration from './pages/AdminForumModeration';
 
+// About Us
+import AboutUs from './pages/AboutUs';
+
 // Global States
 import NotFound from './pages/NotFound';
 
@@ -108,6 +111,9 @@ function AppRoutes() {
       <Route path="/admin/crisis" element={<RequireAdmin><AdminCrisisAlerts /></RequireAdmin>} />
       <Route path="/admin/resources" element={<RequireAdmin><AdminManageResources /></RequireAdmin>} />
       <Route path="/admin/forum" element={<RequireAdmin><AdminForumModeration /></RequireAdmin>} />
+
+      {/* About Us — public */}
+      <Route path="/about" element={<AboutUs />} />
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />

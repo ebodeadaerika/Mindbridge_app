@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, BookOpen, AlertTriangle, Bot, User, LogOut } from 'lucide-react';
+import { Home, BookOpen, AlertTriangle, Bot, User, LogOut, Users } from 'lucide-react';
 import BrainBridgeLogo from '@/components/BrainBridgeLogo';
 import { useAuth } from '@/context/AuthContext';
 
@@ -129,6 +129,29 @@ export default function SideNav() {
       {/* Logout */}
       <div style={{ padding: '12px 12px 24px' }}>
         <div style={{ height: 1, backgroundColor: '#30363D', marginBottom: 12 }} />
+        {/* About Us */}
+        <button
+          onClick={() => navigate('/about')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '10px 14px',
+            borderRadius: 12,
+            border: 'none',
+            cursor: 'pointer',
+            backgroundColor: location.pathname === '/about' ? 'rgba(0,201,167,0.1)' : 'transparent',
+            width: '100%',
+            textAlign: 'left',
+            transition: 'background 0.15s',
+            marginBottom: 4,
+          }}
+        >
+          <Users style={{ width: 20, height: 20, color: location.pathname === '/about' ? '#00C9A7' : '#8B949E', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: location.pathname === '/about' ? 600 : 400, color: location.pathname === '/about' ? '#00C9A7' : '#8B949E' }}>
+            About Us
+          </span>
+        </button>
         <button
           onClick={() => { logout(); navigate('/login'); }}
           style={{
