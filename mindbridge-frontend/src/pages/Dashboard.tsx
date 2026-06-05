@@ -18,7 +18,7 @@ function getGreeting(): string {
 }
 
 function formatDate(): string {
-  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 export default function Dashboard() {
