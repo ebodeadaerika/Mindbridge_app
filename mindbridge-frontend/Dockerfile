@@ -8,8 +8,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install dependencies first (cache layer)
-COPY package.json package-lock.json ./
-RUN npm ci --frozen-lockfile
+COPY package.json ./
+RUN npm install
 
 # Copy source and build
 COPY . .
