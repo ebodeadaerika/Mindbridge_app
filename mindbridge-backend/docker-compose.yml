@@ -58,7 +58,7 @@ services:
     container_name: mindbridge_migrate
     env_file: .env
     environment:
-      DATABASE_URL: postgresql://mindbridge_user:mindbridge_pass@db:5432/mindbridge_db
+      DATABASE_URL: postgresql://mindbridge_user:${DB_PASSWORD:-mindbridge_pass}@db:5432/mindbridge_db
     depends_on:
       db:
         condition: service_healthy

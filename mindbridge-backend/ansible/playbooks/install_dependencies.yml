@@ -37,19 +37,27 @@
         state: present
 
     # ── Docker Installation ─────────────────────────────────────────────────
-    - name: Add Docker GPG key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
     - name: Get system dpkg architecture (amd64 / arm64)
       command: dpkg --print-architecture
       register: dpkg_arch
       changed_when: false
 
+    - name: Create /etc/apt/keyrings directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Download Docker GPG key
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: "0644"
+        force: false
+
     - name: Add Docker repository
       apt_repository:
-        repo: "deb [arch={{ dpkg_arch.stdout }}] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
         state: present
 
     - name: Install Docker Engine
@@ -89,21 +97,13 @@
         state: started
         enabled: yes
 
-    # ── Python 3.11 Installation ────────────────────────────────────────────
-    - name: Add Python deadsnakes PPA
-      apt_repository:
-        repo: "ppa:deadsnakes/ppa"
-        state: present
-
-    - name: Install Python 3.11
+    # ── Python (system — app runs in Docker, just need pip for host tools) ──
+    - name: Install Python 3 and pip
       apt:
         name:
-          - python3.11
-          - python3.11-venv
-          - python3.11-dev
+          - python3
           - python3-pip
         state: present
-        update_cache: yes
 
     # ── Nginx Installation ──────────────────────────────────────────────────
     - name: Install Nginx
@@ -149,7 +149,7 @@
         msg: "Docker installed: {{ docker_version.stdout }}"
 
     - name: Verify Python version
-      command: python3.11 --version
+      command: python3 --version
       register: python_ver
       changed_when: false
 
