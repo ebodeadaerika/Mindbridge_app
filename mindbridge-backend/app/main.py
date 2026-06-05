@@ -9,16 +9,61 @@ Architecture: Layered (N-Tier)
   Data Access Layer   → SQLAlchemy ORM
   Database Layer      → PostgreSQL 15
 """
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError as SAOperationalError
 
 from app.config import settings
+from app.database import engine
 from app.limiter import limiter
 from app.routes import auth, mood, journal, forum, crisis, resources, ai
+
+logger = logging.getLogger(__name__)
+
+
+# ── Lifespan — DB startup retry (Chaos Engineering) ───────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    On startup: wait for DB with exponential backoff so the API survives
+    brief DB outages (teacher kills the db container mid-demo).
+    On shutdown: dispose all pooled connections cleanly.
+    """
+    _max_retries = 12
+    for attempt in range(1, _max_retries + 1):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            logger.info("✅  Database connection established (attempt %d)", attempt)
+            break
+        except Exception as exc:
+            wait = min(2 ** attempt, 30)  # 2, 4, 8, 16, 30, 30 … seconds
+            if attempt < _max_retries:
+                logger.warning(
+                    "⚠️   DB not ready (attempt %d/%d): %s — retrying in %ds …",
+                    attempt, _max_retries, exc, wait,
+                )
+                await asyncio.sleep(wait)
+            else:
+                logger.error(
+                    "❌  DB unreachable after %d attempts — starting anyway; "
+                    "requests will get 503 until DB recovers.",
+                    _max_retries,
+                )
+
+    yield  # ← application is live here
+
+    engine.dispose()
+    logger.info("🔌  Database connection pool closed")
 
 # ── App Instance ───────────────────────────────────────────────────────────────
 app = FastAPI(
@@ -34,6 +79,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 # Register rate limiter state and 429 handler
@@ -88,6 +134,24 @@ def root():
         "docs": "/docs",
         "health": "/health",
     }
+
+
+# ── Database Unavailable Handler (Chaos Engineering) ──────────────────────────
+@app.exception_handler(SAOperationalError)
+async def db_unavailable_handler(request: Request, exc: SAOperationalError):
+    """
+    When the DB container is killed mid-demo the API returns a clean 503
+    instead of an ugly 500.  Once Docker restarts the DB and pool_pre_ping
+    re-establishes the connection, requests succeed automatically.
+    """
+    logger.warning("DB connection error on %s: %s", request.url.path, exc)
+    return JSONResponse(
+        status_code=503,
+        content={
+            "message": "Database temporarily unavailable. Please try again in a moment.",
+            "detail": None,
+        },
+    )
 
 
 # ── Global Exception Handler ───────────────────────────────────────────────────

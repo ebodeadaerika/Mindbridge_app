@@ -11,7 +11,8 @@ engine = create_engine(
     settings.DATABASE_URL,
     pool_size=settings.DB_POOL_SIZE,
     max_overflow=settings.DB_MAX_OVERFLOW,
-    pool_pre_ping=True,  # Detect stale connections
+    pool_pre_ping=True,   # Detect & discard stale connections (Chaos Eng: DB restarts)
+    pool_recycle=3600,    # Force-recycle connections after 1 hour (prevents TCP timeout issues)
     echo=settings.is_development,  # Log SQL only in dev
 )
 

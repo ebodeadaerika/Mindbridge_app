@@ -34,3 +34,12 @@ alembic/versions/*.py
 # OS
 .DS_Store
 Thumbs.db
+
+# Ansible secrets — NEVER commit production secrets
+ansible/vars/production.yml
+ansible/vars/secrets.yml
+
+# SSH keys
+*.pem
+*.key
+id_rsa*
