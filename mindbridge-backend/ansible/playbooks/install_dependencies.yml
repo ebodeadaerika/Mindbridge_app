@@ -9,7 +9,7 @@
   gather_facts: true
 
   vars:
-    docker_compose_version: "v2.24.0"
+    docker_compose_version: "v2.27.0"
     python_version: "3.11"
 
   tasks:
@@ -34,6 +34,7 @@
           - wget
           - ufw
           - rsync
+          - unzip
         state: present
 
     # ── Docker Installation ─────────────────────────────────────────────────
