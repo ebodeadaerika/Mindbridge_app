@@ -21,6 +21,8 @@ from app.models.user import User
 
 router = APIRouter(prefix="/forum", tags=["Forum"])
 
+MAX_REPLY_LENGTH = 1000
+
 
 @router.get("/posts", response_model=ForumListResponse)
 def list_posts(

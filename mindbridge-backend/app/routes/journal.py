@@ -15,6 +15,8 @@ from app.models.user import User
 
 router = APIRouter(prefix="/journal", tags=["Journal"])
 
+MAX_PAGE_SIZE = 50
+
 
 @router.post("/entry", response_model=JournalEntryResponse, status_code=status.HTTP_201_CREATED)
 def create_entry(
