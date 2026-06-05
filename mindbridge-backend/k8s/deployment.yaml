@@ -91,4 +91,5 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
+          terminationMessagePolicy: FallbackToLogsOnError
       restartPolicy: Always
