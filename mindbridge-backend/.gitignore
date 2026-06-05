@@ -18,9 +18,8 @@ htmlcov/
 .coverage
 coverage.xml
 
-# Alembic
-alembic/versions/*.py
-!alembic/versions/.gitkeep
+# Alembic — versions are committed so migrations run on deployment
+# alembic/versions/*.py
 
 # IDE
 .vscode/
