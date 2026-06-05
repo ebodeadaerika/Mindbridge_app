@@ -116,7 +116,7 @@ The specific objectives of this project are:
 6. **O6 — DevOps**: Implement a complete CI/CD pipeline using Jenkins, containerize the application with Docker, and deploy to a Kubernetes cluster.
 7. **O7 — Monitoring**: Configure Prometheus metrics collection and Grafana dashboards for real-time system observability.
 8. **O8 — Configuration Management**: Automate VPS provisioning and application deployment using Ansible playbooks.
-9. **O9 — Innovation**: Integrate the Claude AI API (Anthropic) to provide a 24/7 empathetic AI wellness companion (MindBot).
+9. **O9 — Innovation**: Integrate the Groq API (Llama 3.3-70b) to provide a 24/7 empathetic AI wellness companion (MindBot).
 10. **O10 — Documentation**: Produce complete documentation including this report, a user manual, Swagger API docs, and a README.
 
 ## 1.5 Scope and Limitations
@@ -140,7 +140,7 @@ The specific objectives of this project are:
 - Multi-language (i18n) support (English only for this version)
 
 **Limitations:**
-- The AI companion (MindBot) uses the Anthropic Claude API which requires an internet connection and API key; no fallback is implemented for offline use.
+- The AI companion (MindBot) uses the Groq API which requires an internet connection and API key; no fallback is implemented for offline use.
 - Google SSO requires a Google Cloud project configured with OAuth credentials.
 - Kubernetes deployment was tested with Minikube (local); production deployment on Oracle Cloud VPS requires DNS configuration.
 - The platform does not perform clinical-grade mental health assessment.
@@ -738,7 +738,7 @@ graph TB
     end
 
     subgraph External["External Services"]
-        ClaudeAPI["Anthropic\nClaude API\n(MindBot AI)"]
+        GroqAPI["Groq\nGroq API\n(MindBot AI)"]
         EmailSvc["SMTP / Email\n(Password reset)"]
         GoogleOAuth["Google OAuth 2.0\n(SSO)"]
     end
@@ -749,7 +749,7 @@ graph TB
     Middleware --> Routes
     Routes --> Services
     Services -->|"SQLAlchemy ORM"| Postgres
-    Services -->|"REST /messages"| ClaudeAPI
+    Services -->|"REST /messages"| GroqAPI
     Services -->|"SMTP"| EmailSvc
     React -->|"OAuth"| GoogleOAuth
     Prometheus -->|"scrape /metrics"| Routes
@@ -1033,7 +1033,7 @@ graph TB
 
     subgraph External
         GitHub["GitHub Repository"]
-        ClaudeAPI2["Anthropic\nClaude API"]
+        GroqAPI2["Groq\nGroq API"]
         SMTP["SMTP Server\n(email)"]
         GoogleOAuth2["Google OAuth 2.0"]
     end
@@ -1051,7 +1051,7 @@ graph TB
     HPA -->|"scales"| APIDeploy
     GitHub -->|"webhook"| Jenkins
     Jenkins -->|"kubectl apply"| Minikube
-    AP1 --> ClaudeAPI2
+    AP1 --> GroqAPI2
     AP1 --> SMTP
     Browser --> GoogleOAuth2
 ```
@@ -1285,7 +1285,7 @@ spec:
 | Monitoring | Prometheus + Grafana | Latest | Industry standard observability stack |
 | IaC | Ansible | 2.x | Agentless; YAML playbooks; idempotent |
 | Testing | PyTest + coverage.py | Latest | Python standard; fixtures; parameterization |
-| AI API | Anthropic Claude | claude-3-5-haiku | Best empathy quality; affordable pricing |
+| AI API | Groq (Llama 3.3-70b) | llama-3.3-70b-versatile | Best empathy quality; affordable pricing |
 | API Docs | Swagger UI | (FastAPI built-in) | Automatically generated from code |
 | Version Control | Git + GitHub | Latest | Standard industry practice |
 
@@ -1880,7 +1880,7 @@ Images built locally on the host machine were not visible to Minikube's Docker d
 
 ### 4.7.3 AI Feature Discussion
 
-The MindBot AI companion uses the Anthropic Claude API (claude-3-5-haiku) with a specialized system prompt:
+The MindBot AI companion uses the Groq API (llama-3.3-70b-versatile) with a specialized system prompt:
 
 ```
 You are MindBot, an empathetic AI wellness companion for university students.
@@ -1943,7 +1943,7 @@ This report has presented MindBridge, a full-stack campus mental health platform
 - A complete DevOps pipeline: Jenkins CI/CD → Docker → Kubernetes (8 YAML manifests)
 - Prometheus + Grafana monitoring with custom dashboards and alert rules
 - Ansible automation for VPS provisioning and deployment
-- An AI wellness companion (MindBot) integrated with the Anthropic Claude API
+- An AI wellness companion (MindBot) integrated with the Groq API
 - Structural privacy guarantees enforced at the database schema level
 
 **Methodological achievements:**
@@ -2074,7 +2074,7 @@ DATABASE_URL=postgresql://mindbridge:password@localhost:5432/mindbridge_db
 SECRET_KEY=your-super-secret-key-min-32-chars
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-AI_API_KEY=your-anthropic-api-key
+AI_API_KEY=your-groq-api-key
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 SMTP_HOST=smtp.gmail.com

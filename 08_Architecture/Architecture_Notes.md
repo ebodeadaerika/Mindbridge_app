@@ -48,7 +48,7 @@
 ### Component View
 - Frontend (React SPA) communicates with Backend (FastAPI) via REST API
 - Backend communicates with Database (PostgreSQL) via SQLAlchemy
-- Backend communicates with external AI API (Claude/OpenAI) via HTTP
+- Backend communicates with external AI API (Groq) via HTTP
 - Prometheus scrapes /metrics endpoint from Backend
 - Grafana reads from Prometheus
 - Jenkins CI/CD builds and deploys Backend container to Kubernetes
@@ -142,7 +142,7 @@ The innovation pitch:
 - POST /ai/chat endpoint
 - Request: { "message": "string", "history": [{"role": "user"|"assistant", "content": "string"}] }
 - System prompt instructs AI to: respond with empathy, never diagnose, include crisis resources if self-harm detected
-- Uses Claude API (claude-sonnet model) or OpenAI API
+- Uses Groq API (llama-3.3-70b-versatile)
 - No server-side storage of conversations (privacy)
 
 ---

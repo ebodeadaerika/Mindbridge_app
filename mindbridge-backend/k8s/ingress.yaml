@@ -86,8 +86,8 @@ type: Opaque
 stringData:
   SECRET_KEY: "change-this-to-a-strong-secret-in-production-minimum-32-chars"
   DATABASE_URL: "postgresql://mindbridge_user:mindbridge_pass@mindbridge-db-service:5432/mindbridge_db"
-  AI_API_KEY: "your-anthropic-api-key-here"
-  AI_MODEL: "claude-sonnet-4-20250514"
+  AI_API_KEY: "your-groq-api-key-here"
+  AI_MODEL: "llama-3.3-70b-versatile"
 
 ---
 apiVersion: v1

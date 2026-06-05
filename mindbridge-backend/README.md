@@ -188,8 +188,8 @@ See `.env.example` for all available variables.
 | `DATABASE_URL` | PostgreSQL connection string |
 | `SECRET_KEY` | JWT signing key (min 32 chars) |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Token lifetime (default: 1440 = 24h) |
-| `AI_API_KEY` | Anthropic / OpenAI API key |
-| `AI_MODEL` | AI model name (default: claude-sonnet-4-20250514) |
+| `AI_API_KEY` | Groq API key |
+| `AI_MODEL` | AI model name (default: llama-3.3-70b-versatile) |
 
 ---
 

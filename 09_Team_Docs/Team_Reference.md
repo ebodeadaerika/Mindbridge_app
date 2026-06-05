@@ -110,8 +110,8 @@ DATABASE_URL=postgresql://user:password@db:5432/mindbridge
 SECRET_KEY=your-secret-key-here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
-AI_API_KEY=your-claude-or-openai-key
-AI_MODEL=claude-sonnet-4-20250514
+AI_API_KEY=your-groq-api-key
+AI_MODEL=llama-3.3-70b-versatile
 ```
 
 ---

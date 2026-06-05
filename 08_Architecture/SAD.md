@@ -123,7 +123,7 @@ graph TB
     end
 
     subgraph External["External Services"]
-        ClaudeAPI["Anthropic\nClaude API"]
+        GroqAPI["Groq\nGroq API"]
         EmailSvc["Email / SMTP"]
     end
 
@@ -133,7 +133,7 @@ graph TB
     Middleware --> Routes
     Routes --> Services
     Services -->|"SQLAlchemy ORM"| Postgres
-    Services -->|"REST /messages"| ClaudeAPI
+    Services -->|"REST /messages"| GroqAPI
     Services -->|"SMTP"| EmailSvc
     Prometheus -->|"scrape /metrics"| Routes
     Grafana -->|"query"| Prometheus
@@ -367,7 +367,7 @@ sequenceDiagram
     participant A as FastAPI /ai/chat
     participant M as Auth + Rate Limit
     participant S as AIService
-    participant X as Anthropic Claude API
+    participant X as Groq API
 
     C->>A: POST /api/v1/ai/chat\n{message, history[]}\nAuthorization: Bearer <token>
     A->>M: Verify JWT (30 req/min per user)
@@ -423,7 +423,7 @@ graph TB
     end
 
     subgraph External["External APIs"]
-        Claude["Anthropic\nClaude API"]
+        Groq["Groq\nGroq API"]
         SMTP["SMTP Server\n(email)"]
     end
 
@@ -440,8 +440,8 @@ graph TB
     Prom -->|"scrape"| API1
     Prom -->|"scrape"| API2
     Graf -->|"query"| Prom
-    API1 --> Claude
-    API2 --> Claude
+    API1 --> GroqAPI
+    API2 --> GroqAPI
     API1 --> SMTP
     Jenkins -->|"kubectl apply"| K8s
     Jenkins -->|"docker pull"| DockerHub
