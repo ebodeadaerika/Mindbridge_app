@@ -24,7 +24,7 @@ pipeline {
     }
 
     options {
-        timeout(time: 45, unit: 'MINUTES')
+        timeout(time: 30, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
         timestamps()
         disableConcurrentBuilds()       // prevent parallel builds on same branch
@@ -112,7 +112,7 @@ pipeline {
                             --cov-report=html:htmlcov \
                             --cov-report=xml:coverage.xml \
                             --cov-report=term-missing \
-                            --cov-fail-under=80 \
+                            --cov-fail-under=80 \  // fail build if coverage drops below 80%
                             -v \
                             --tb=short
                     '''
