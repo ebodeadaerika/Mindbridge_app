@@ -1,7 +1,7 @@
 """
 MindBridge — AI Wellness Companion Service
-Uses Groq (free tier) with Llama 3.1 70B via an OpenAI-compatible API.
-Switch provider by changing AI_API_URL + AI_MODEL in .env — no code change needed.
+Uses Groq with llama-3.3-70b-versatile via OpenAI-compatible API.
+Switch model by changing AI_MODEL in .env — no code change needed.
 
 Key rules (FR-37 to FR-41):
 - Responds with empathy, suggests coping strategies
@@ -48,7 +48,7 @@ def _contains_crisis_language(message: str) -> bool:
 
 async def chat_with_ai(message: str, history: List[Dict[str, str]]) -> Dict[str, str]:
     """
-    Send a message to the Groq API (Llama 3.1 70B) and return an empathetic response.
+    Send a message to the Groq API and return an empathetic response.
     Uses OpenAI-compatible chat completions format.
     History is passed from the client — NOT stored on the server (FR-41).
     """
