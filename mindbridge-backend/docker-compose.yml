@@ -87,6 +87,20 @@ services:
     networks:
       - mindbridge_network
 
+  # ── React Frontend ─────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ../mindbridge-frontend
+      dockerfile: Dockerfile
+    container_name: mindbridge_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - mindbridge_network
+
   # ── Grafana Dashboards ──────────────────────────────────────────────────────
   grafana:
     image: grafana/grafana:10.4.0
