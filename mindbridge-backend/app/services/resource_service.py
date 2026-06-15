@@ -4,12 +4,12 @@ Business logic for mental health resource library.
 Only admins can create/delete resources; any authenticated user can browse (FR-32, FR-35).
 """
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 from uuid import UUID
 
 from app.models.resource import Resource, ResourceCategory
 from app.models.user import User
 from app.schemas.resource import ResourceCreate, ResourceUpdate, ResourceResponse, ResourceListResponse
+from app.utils.db import get_or_404
 
 
 def list_resources(db: Session, category: ResourceCategory = None) -> ResourceListResponse:
@@ -41,7 +41,7 @@ def create_resource(db: Session, admin: User, data: ResourceCreate) -> ResourceR
 
 def update_resource(db: Session, resource_id: UUID, data: ResourceUpdate) -> ResourceResponse:
     """Update an existing resource — admin only."""
-    resource = _get_or_404(db, resource_id)
+    resource = get_or_404(db, Resource, resource_id, detail="Resource not found")
     if data.title is not None:
         resource.title = data.title
     if data.category is not None:
@@ -57,14 +57,8 @@ def update_resource(db: Session, resource_id: UUID, data: ResourceUpdate) -> Res
 
 def delete_resource(db: Session, resource_id: UUID) -> dict:
     """Delete a resource — admin only (FR-35)."""
-    resource = _get_or_404(db, resource_id)
+    resource = get_or_404(db, Resource, resource_id, detail="Resource not found")
     db.delete(resource)
     db.commit()
     return {"message": "Resource deleted successfully"}
 
-
-def _get_or_404(db: Session, resource_id: UUID) -> Resource:
-    resource = db.query(Resource).filter(Resource.id == resource_id).first()
-    if not resource:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
-    return resource

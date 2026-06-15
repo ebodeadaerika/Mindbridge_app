@@ -2,20 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Lock, BookOpen, Trash2, X } from 'lucide-react';
+import { Plus, Lock, BookOpen, Trash2 } from 'lucide-react';
 import { journalApi } from '@/api/client';
 import BottomNav from '@/components/BottomNav';
+import PageShell from '@/components/ui/PageShell';
+import BackButton from '@/components/ui/BackButton';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { formatDateLong, wordCount } from '@/utils/formatters';
 import type { JournalEntry } from '@/types';
 
 const BORDER_COLORS = ['#00C9A7', '#7B61FF', '#FFB347'];
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-}
-
-function wordCount(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length;
-}
 
 export default function JournalList() {
   const navigate = useNavigate();
@@ -61,15 +58,10 @@ export default function JournalList() {
   };
 
   return (
-    <div
-      className="w-full h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#0D0F14' }}
-    >
+    <PageShell>
       {/* Header */}
       <div className="flex items-center gap-3 px-5 md:px-8 pt-12 md:pt-6 pb-2">
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-          <ArrowLeft style={{ color: '#F0F2F5', width: 24, height: 24 }} />
-        </button>
+        <BackButton />
         <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '22px', color: '#F0F2F5', flex: 1 }}>
           My Journal
         </h1>
@@ -198,7 +190,7 @@ export default function JournalList() {
                       {entry.title}
                     </p>
                     <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: '#8B949E', whiteSpace: 'nowrap', marginTop: 2 }}>
-                      {formatDate(entry.created_at)}
+                      {formatDateLong(entry.created_at)}
                     </p>
                   </div>
                   <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px', color: '#8B949E', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
@@ -240,101 +232,20 @@ export default function JournalList() {
         </button>
       )}
 
-      {/* Delete Modal */}
-      {deleteModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.7)',
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'center',
-            zIndex: 100,
-            maxWidth: 560,
-            margin: '0 auto',
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#161B22',
-              borderRadius: '20px 20px 0 0',
-              padding: 24,
-              width: '100%',
-              border: '1px solid #30363D',
-            }}
-          >
-            <div className="flex flex-col items-center gap-4">
-              <div
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(255,92,92,0.12)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Trash2 style={{ color: '#FF5C5C', width: 24, height: 24 }} />
-              </div>
-              <div className="text-center">
-                <p style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '18px', color: '#F0F2F5', marginBottom: 6 }}>
-                  Delete this entry?
-                </p>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', color: '#8B949E' }}>
-                  "{deleteModal.title}" will be permanently deleted.
-                </p>
-                {deleteError && (
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px', color: '#FF5C5C', marginTop: 8 }}>
-                    {deleteError}
-                  </p>
-                )}
-              </div>
-              <div className="flex gap-3 w-full mt-2">
-                <button
-                  onClick={() => { setDeleteModal(null); setDeleteError(''); }}
-                  style={{
-                    flex: 1,
-                    height: 48,
-                    borderRadius: 50,
-                    background: 'transparent',
-                    border: '1px solid #30363D',
-                    color: '#F0F2F5',
-                    fontFamily: 'Inter, sans-serif',
-                    fontSize: '15px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Keep Entry
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  style={{
-                    flex: 1,
-                    height: 48,
-                    borderRadius: 50,
-                    background: 'linear-gradient(135deg, #FF5C5C 0%, #cc3333 100%)',
-                    border: 'none',
-                    color: '#fff',
-                    fontFamily: 'Inter, sans-serif',
-                    fontSize: '15px',
-                    fontWeight: 600,
-                    cursor: deleting ? 'not-allowed' : 'pointer',
-                    opacity: deleting ? 0.7 : 1,
-                  }}
-                >
-                  {deleting ? 'Deleting...' : 'Delete Forever'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={!!deleteModal}
+        title="Delete this entry?"
+        description={deleteModal ? `"${deleteModal.title}" will be permanently deleted.` : ''}
+        confirmLabel="Delete Forever"
+        cancelLabel="Keep Entry"
+        confirmColor="#FF5C5C"
+        loading={deleting}
+        error={deleteError || undefined}
+        onConfirm={handleDelete}
+        onCancel={() => { setDeleteModal(null); setDeleteError(''); }}
+      />
 
       <BottomNav />
-    </div>
+    </PageShell>
   );
 }

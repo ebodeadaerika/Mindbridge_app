@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, MessageSquare, Heart, Share2 } from 'lucide-react';
 import { forumApi } from '@/api/client';
-import type { LikeToggleResponse } from '@/types';
+import type { LikeToggleResponse, ForumPost } from '@/types';
 import BottomNav from '@/components/BottomNav';
-import type { ForumPost } from '@/types';
+import PageShell from '@/components/ui/PageShell';
+import { relativeTime } from '@/utils/formatters';
 
 const CATEGORIES = ['All', 'Anxiety', 'Exams', 'Relationships', 'Motivation', 'Sleep'];
 
@@ -42,16 +43,6 @@ function getAvatarBg(anonName: string): string {
   const hash = anonName.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   const fallbacks = ['#1A4A7A', '#4B3580', '#1A6B4A', '#7A4A1A', '#1A6B6B'];
   return fallbacks[hash % fallbacks.length];
-}
-
-function relativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return 'just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
 }
 
 function SkeletonCard() {
@@ -135,10 +126,7 @@ export default function Forum() {
   };
 
   return (
-    <div
-      className="w-full h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#0D0F14' }}
-    >
+    <PageShell>
       {/* Header */}
       <div className="flex items-center justify-between px-5 md:px-8 pt-12 md:pt-6 pb-3">
         <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '22px', color: '#F0F2F5' }}>
@@ -385,6 +373,6 @@ export default function Forum() {
       </button>
 
       <BottomNav />
-    </div>
+    </PageShell>
   );
 }

@@ -2,27 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, MoreVertical, Trash2, Edit2, X, Link, AlertTriangle } from 'lucide-react';
+import { Plus, MoreVertical, Trash2, Edit2, X, Link, AlertTriangle } from 'lucide-react';
 import { resourcesApi } from '@/api/client';
 import AdminBottomNav from '@/components/AdminBottomNav';
+import PageShell from '@/components/ui/PageShell';
+import BackButton from '@/components/ui/BackButton';
+import { CATEGORY_COLORS, RESOURCE_FILTER_LABELS, RESOURCE_FILTER_MAP } from '@/constants/resources';
+import { RESOURCE_CATEGORIES } from '@/types';
 import type { Resource, ResourceCategory } from '@/types';
-
-const CATEGORIES: ResourceCategory[] = ['article', 'breathing', 'coping', 'hotline'];
-const CATEGORY_COLORS: Record<ResourceCategory, string> = {
-  article: '#7B61FF',
-  breathing: '#00C9A7',
-  coping: '#FFB347',
-  hotline: '#FF5C5C',
-};
-
-const ALL_FILTERS = ['All', 'Articles', 'Breathing', 'Coping', 'Hotlines'];
-const FILTER_MAP: Record<string, ResourceCategory | undefined> = {
-  All: undefined,
-  Articles: 'article',
-  Breathing: 'breathing',
-  Coping: 'coping',
-  Hotlines: 'hotline',
-};
 
 export default function AdminManageResources() {
   const navigate = useNavigate();
@@ -47,7 +34,7 @@ export default function AdminManageResources() {
     const load = async () => {
       setLoading(true);
       try {
-        const params = FILTER_MAP[filter] ? { category: FILTER_MAP[filter] } : {};
+        const params = RESOURCE_FILTER_MAP[filter] ? { category: RESOURCE_FILTER_MAP[filter] } : {};
         const res = await resourcesApi.list(params);
         setResources(res.data.resources || []);
       } catch {
@@ -115,15 +102,10 @@ export default function AdminManageResources() {
   const filtered = resources;
 
   return (
-    <div
-      className="w-full h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#0D0F14' }}
-    >
+    <PageShell>
       {/* Header */}
       <div className="flex items-center gap-3 px-5 md:px-8 pt-12 md:pt-6 pb-3">
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-          <ArrowLeft style={{ color: '#F0F2F5', width: 24, height: 24 }} />
-        </button>
+        <BackButton />
         <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '20px', color: '#F0F2F5', flex: 1 }}>
           Manage Resources
         </h1>
@@ -138,7 +120,7 @@ export default function AdminManageResources() {
       {/* Filter + count */}
       <div className="px-5 md:px-8 pb-3">
         <div className="flex gap-2 overflow-x-auto mb-2" style={{ scrollbarWidth: 'none' }}>
-          {ALL_FILTERS.map((f) => (
+          {RESOURCE_FILTER_LABELS.map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -394,7 +376,7 @@ export default function AdminManageResources() {
                   Category
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  {CATEGORIES.map((cat) => (
+                  {RESOURCE_CATEGORIES.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setNewCategory(cat)}
@@ -585,6 +567,6 @@ export default function AdminManageResources() {
       )}
 
       <AdminBottomNav />
-    </div>
+    </PageShell>
   );
 }

@@ -4,36 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { Search, X, ChevronRight, BookOpen, Wind, Shield, Phone, FileText } from 'lucide-react';
 import { resourcesApi } from '@/api/client';
 import BottomNav from '@/components/BottomNav';
+import PageShell from '@/components/ui/PageShell';
+import { CATEGORY_COLORS, CATEGORY_BG, RESOURCE_FILTER_LABELS, RESOURCE_FILTER_MAP } from '@/constants/resources';
 import type { Resource, ResourceCategory } from '@/types';
-
-const FILTER_LABELS = ['All', 'Articles', 'Breathing', 'Coping', 'Hotlines'];
-const FILTER_MAP: Record<string, ResourceCategory | undefined> = {
-  All: undefined,
-  Articles: 'article',
-  Breathing: 'breathing',
-  Coping: 'coping',
-  Hotlines: 'hotline',
-};
 
 const CATEGORY_ICONS: Record<ResourceCategory, React.ElementType> = {
   article: FileText,
   breathing: Wind,
   coping: Shield,
   hotline: Phone,
-};
-
-const CATEGORY_COLORS: Record<ResourceCategory, string> = {
-  article: '#7B61FF',
-  breathing: '#00C9A7',
-  coping: '#FFB347',
-  hotline: '#FF5C5C',
-};
-
-const CATEGORY_BG: Record<ResourceCategory, string> = {
-  article: 'rgba(123,97,255,0.12)',
-  breathing: 'rgba(0,201,167,0.12)',
-  coping: 'rgba(255,179,71,0.12)',
-  hotline: 'rgba(255,92,92,0.12)',
 };
 
 function SkeletonCard({ featured }: { featured?: boolean }) {
@@ -58,7 +37,7 @@ export default function ResourceLibrary() {
     const load = async () => {
       setLoading(true);
       try {
-        const params = FILTER_MAP[filter] ? { category: FILTER_MAP[filter] } : {};
+        const params = RESOURCE_FILTER_MAP[filter] ? { category: RESOURCE_FILTER_MAP[filter] } : {};
         const res = await resourcesApi.list(params);
         setResources(res.data.resources || []);
       } catch {
@@ -82,10 +61,7 @@ export default function ResourceLibrary() {
   const rest = filtered.slice(1);
 
   return (
-    <div
-      className="w-full h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#0D0F14' }}
-    >
+    <PageShell>
       {/* Header */}
       <div className="flex items-center justify-between px-5 md:px-8 pt-12 md:pt-6 pb-3">
         {searchOpen ? (
@@ -139,7 +115,7 @@ export default function ResourceLibrary() {
 
       {/* Filter pills */}
       <div className="flex gap-2 px-5 md:px-8 pb-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-        {FILTER_LABELS.map((f) => (
+        {RESOURCE_FILTER_LABELS.map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -286,6 +262,6 @@ export default function ResourceLibrary() {
       </div>
 
       <BottomNav />
-    </div>
+    </PageShell>
   );
 }

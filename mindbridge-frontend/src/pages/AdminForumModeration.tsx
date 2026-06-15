@@ -2,20 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Info, AlertTriangle, X } from 'lucide-react';
+import { Info, AlertTriangle, X } from 'lucide-react';
 import { forumApi } from '@/api/client';
 import AdminBottomNav from '@/components/AdminBottomNav';
+import PageShell from '@/components/ui/PageShell';
+import BackButton from '@/components/ui/BackButton';
+import { relativeTime } from '@/utils/formatters';
 import type { ForumPost } from '@/types';
-
-function relativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return 'just now';
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
 
 export default function AdminForumModeration() {
   const navigate = useNavigate();
@@ -62,15 +55,10 @@ export default function AdminForumModeration() {
   const filteredPosts = tab === 'flagged' ? posts.filter((p) => flaggedIds.has(p.id)) : posts;
 
   return (
-    <div
-      className="w-full h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#0D0F14' }}
-    >
+    <PageShell>
       {/* Header */}
       <div className="flex items-center gap-3 px-5 md:px-8 pt-12 md:pt-6 pb-4">
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-          <ArrowLeft style={{ color: '#F0F2F5', width: 24, height: 24 }} />
-        </button>
+        <BackButton />
         <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '20px', color: '#F0F2F5', flex: 1 }}>
           Moderation
         </h1>
@@ -391,6 +379,6 @@ export default function AdminForumModeration() {
       )}
 
       <AdminBottomNav />
-    </div>
+    </PageShell>
   );
 }

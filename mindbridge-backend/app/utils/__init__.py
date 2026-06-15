@@ -1,0 +1,3 @@
+"""
+MindBridge — Shared Utilities Package
+"""

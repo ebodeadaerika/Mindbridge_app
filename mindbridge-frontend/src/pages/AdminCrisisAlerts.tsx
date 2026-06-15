@@ -2,31 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 import { crisisApi } from '@/api/client';
 import AdminBottomNav from '@/components/AdminBottomNav';
+import PageShell from '@/components/ui/PageShell';
+import BackButton from '@/components/ui/BackButton';
+import { formatDateTime } from '@/utils/formatters';
+import { SEVERITY_COLORS, SEVERITY_BG } from '@/constants/severity';
 import type { CrisisFlag } from '@/types';
-
-const SEVERITY_COLORS: Record<string, string> = {
-  low: '#FFD60A',
-  medium: '#FFB347',
-  high: '#FF5C5C',
-};
-
-const SEVERITY_BG: Record<string, string> = {
-  low: 'rgba(255,214,10,0.12)',
-  medium: 'rgba(255,179,71,0.12)',
-  high: 'rgba(255,92,92,0.12)',
-};
-
-function formatTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
 
 export default function AdminCrisisAlerts() {
   const navigate = useNavigate();
@@ -84,15 +67,10 @@ export default function AdminCrisisAlerts() {
   const displayFlags = tab === 'pending' ? pendingFlags : resolvedFlags;
 
   return (
-    <div
-      className="w-full h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#0D0F14' }}
-    >
+    <PageShell>
       {/* Header */}
       <div className="flex items-center gap-3 px-5 md:px-8 pt-12 md:pt-6 pb-4">
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-          <ArrowLeft style={{ color: '#F0F2F5', width: 24, height: 24 }} />
-        </button>
+        <BackButton />
         <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '20px', color: '#F0F2F5', flex: 1 }}>
           Crisis Alerts
         </h1>
@@ -251,7 +229,7 @@ export default function AdminCrisisAlerts() {
                       </span>
                     </div>
                     <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: '#8B949E' }}>
-                      {formatTime(flag.created_at)}
+                      {formatDateTime(flag.created_at)}
                     </span>
                   </div>
 
@@ -397,6 +375,6 @@ export default function AdminCrisisAlerts() {
       )}
 
       <AdminBottomNav />
-    </div>
+    </PageShell>
   );
 }

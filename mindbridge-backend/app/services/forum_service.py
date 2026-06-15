@@ -4,7 +4,6 @@ Business logic for anonymous peer support forum.
 All posts and replies use auto-generated animal names — no user identity stored (FR-21).
 Likes use anon_token (same HMAC-SHA256 privacy model as mood logs) — no user_id stored.
 """
-import hashlib
 import random
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -18,7 +17,7 @@ from app.schemas.forum import (
     ForumPostResponse, ForumPostDetailResponse, ForumListResponse,
     ForumReplyResponse, LikeToggleResponse,
 )
-from app.config import settings
+from app.utils.privacy import generate_anon_token
 
 # Animal name generator for anonymous identities (FR-22)
 _ADJECTIVES = [
@@ -35,15 +34,6 @@ def _generate_anon_name() -> str:
     """Generate a random 'Adjective Animal' display name e.g. 'Blue Sparrow'."""
     return f"{random.choice(_ADJECTIVES)} {random.choice(_ANIMALS)}"
 
-
-def _generate_anon_token(user_id: str) -> str:
-    """
-    Derive an anonymous, non-reversible token from a user's ID.
-    Uses HMAC-SHA256 with the app's SECRET_KEY as pepper — same pattern as mood logs.
-    This lets us prevent double-liking without storing user_id (NFR-07).
-    """
-    combined = f"{settings.SECRET_KEY}:{user_id}"
-    return hashlib.sha256(combined.encode()).hexdigest()
 
 
 def list_posts(
@@ -88,7 +78,7 @@ def list_posts(
     like_counts = {row.post_id: row.cnt for row in like_count_rows}
 
     # Bulk-fetch which of these posts the current user has already liked
-    anon_token = _generate_anon_token(str(user_id))
+    anon_token = generate_anon_token(str(user_id))
     liked_rows = (
         db.query(PostLike.post_id)
         .filter(PostLike.post_id.in_(post_ids), PostLike.anon_token == anon_token)
@@ -119,7 +109,7 @@ def get_post(db: Session, user_id, post_id: UUID) -> ForumPostDetailResponse:
         .scalar()
     ) or 0
 
-    anon_token = _generate_anon_token(str(user_id))
+    anon_token = generate_anon_token(str(user_id))
     liked = (
         db.query(PostLike)
         .filter(PostLike.post_id == post_id, PostLike.anon_token == anon_token)
@@ -142,7 +132,7 @@ def toggle_like(db: Session, user: User, post_id: UUID) -> LikeToggleResponse:
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
-    anon_token = _generate_anon_token(str(user.id))
+    anon_token = generate_anon_token(str(user.id))
     existing = (
         db.query(PostLike)
         .filter(PostLike.post_id == post_id, PostLike.anon_token == anon_token)

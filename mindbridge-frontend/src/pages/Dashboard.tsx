@@ -6,20 +6,9 @@ import { Bell, BookOpen, MessageSquare, BookMarked, AlertTriangle, X, CheckCircl
 import { useAuth } from '@/context/AuthContext';
 import { moodApi } from '@/api/client';
 import BottomNav from '@/components/BottomNav';
-
-const MOOD_EMOJIS = ['😞', '😕', '😐', '🙂', '😄'];
-const MOOD_LABELS = ['Very Low', 'Low', 'Okay', 'Good', 'Excellent'];
-
-function getGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning';
-  if (h < 17) return 'Good afternoon';
-  return 'Good evening';
-}
-
-function formatDate(): string {
-  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-}
+import PageShell from '@/components/ui/PageShell';
+import { getGreeting, formatToday } from '@/utils/formatters';
+import { MOOD_EMOJIS, MOOD_LABELS } from '@/types';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -79,10 +68,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div
-      className="w-full h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#0D0F14' }}
-    >
+    <PageShell>
       {/* Top glow */}
       <div
         className="absolute top-0 right-0 w-56 h-56 rounded-full pointer-events-none"
@@ -119,7 +105,7 @@ export default function Dashboard() {
                 {getGreeting()}, {firstName}
               </p>
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px', color: '#8B949E' }}>
-                Today, {formatDate()}
+                Today, {formatToday()}
               </p>
             </div>
           </div>
@@ -408,6 +394,6 @@ export default function Dashboard() {
       </div>
 
       <BottomNav />
-    </div>
+    </PageShell>
   );
 }
