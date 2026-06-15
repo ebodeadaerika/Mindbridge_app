@@ -7,14 +7,21 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from app.config import settings
 
 # Create engine with connection pool configuration (NFR-24)
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_size=settings.DB_POOL_SIZE,
-    max_overflow=settings.DB_MAX_OVERFLOW,
-    pool_pre_ping=True,   # Detect & discard stale connections (Chaos Eng: DB restarts)
-    pool_recycle=3600,    # Force-recycle connections after 1 hour (prevents TCP timeout issues)
-    echo=settings.is_development,  # Log SQL only in dev
-)
+_engine_kwargs: dict = {
+    "echo": settings.is_development,
+}
+
+if settings.DATABASE_URL.startswith("sqlite"):
+    _engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    _engine_kwargs.update(
+        pool_size=settings.DB_POOL_SIZE,
+        max_overflow=settings.DB_MAX_OVERFLOW,
+        pool_pre_ping=True,
+        pool_recycle=3600,
+    )
+
+engine = create_engine(settings.DATABASE_URL, **_engine_kwargs)
 
 # Session factory — used in dependency injection
 SessionLocal = sessionmaker(

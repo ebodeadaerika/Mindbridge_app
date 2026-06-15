@@ -5,6 +5,7 @@ PRIVACY CRITICAL: anon_token is derived by hashing user_id with a pepper.
 Admins only ever see aggregated statistics — never individual records.
 """
 import hashlib
+import hmac
 from datetime import date, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -23,9 +24,11 @@ def _generate_anon_token(user_id: str) -> str:
     This makes it impossible to reverse-engineer the user_id from the token
     even with access to the database (FR-12, NFR-07).
     """
-    pepper = settings.SECRET_KEY
-    combined = f"{pepper}:{user_id}"
-    return hashlib.sha256(combined.encode()).hexdigest()
+    return hmac.new(
+        settings.SECRET_KEY.encode(),
+        user_id.encode(),
+        hashlib.sha256,
+    ).hexdigest()
 
 
 def submit_checkin(db: Session, user: User, data: MoodCheckIn) -> MoodLogResponse:

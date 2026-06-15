@@ -5,6 +5,7 @@ All posts and replies use auto-generated animal names — no user identity store
 Likes use anon_token (same HMAC-SHA256 privacy model as mood logs) — no user_id stored.
 """
 import hashlib
+import hmac
 import random
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -42,8 +43,11 @@ def _generate_anon_token(user_id: str) -> str:
     Uses HMAC-SHA256 with the app's SECRET_KEY as pepper — same pattern as mood logs.
     This lets us prevent double-liking without storing user_id (NFR-07).
     """
-    combined = f"{settings.SECRET_KEY}:{user_id}"
-    return hashlib.sha256(combined.encode()).hexdigest()
+    return hmac.new(
+        settings.SECRET_KEY.encode(),
+        user_id.encode(),
+        hashlib.sha256,
+    ).hexdigest()
 
 
 def list_posts(

@@ -76,9 +76,9 @@ app = FastAPI(
         "**Semester:** Spring 2026"
     ),
     version=settings.APP_VERSION,
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url="/docs" if settings.is_development else None,
+    redoc_url="/redoc" if settings.is_development else None,
+    openapi_url="/openapi.json" if settings.is_development else None,
     lifespan=lifespan,
 )
 
@@ -91,8 +91,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # ── Prometheus Metrics (Section 4 — Monitoring) ────────────────────────────────
@@ -118,12 +118,11 @@ def health_check():
     Simple health check endpoint used by Kubernetes liveness and readiness probes.
     Returns 200 OK when the application is running.
     """
-    return {
-        "status": "healthy",
-        "app": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-        "environment": settings.ENVIRONMENT,
-    }
+    payload = {"status": "healthy", "app": settings.APP_NAME}
+    if settings.is_development:
+        payload["version"] = settings.APP_VERSION
+        payload["environment"] = settings.ENVIRONMENT
+    return payload
 
 
 # ── Root Redirect ──────────────────────────────────────────────────────────────

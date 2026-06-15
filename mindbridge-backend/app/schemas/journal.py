@@ -11,7 +11,7 @@ from uuid import UUID
 
 class JournalEntryCreate(BaseModel):
     title: str = Field(min_length=1, max_length=200)
-    body: str = Field(min_length=1)
+    body: str = Field(min_length=1, max_length=50000)
 
     @field_validator("title", "body")
     @classmethod
@@ -24,7 +24,7 @@ class JournalEntryCreate(BaseModel):
 
 class JournalEntryUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
-    body: Optional[str] = Field(None, min_length=1)
+    body: Optional[str] = Field(None, min_length=1, max_length=50000)
 
     @field_validator("title", "body")
     @classmethod
