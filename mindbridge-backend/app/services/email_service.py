@@ -7,6 +7,7 @@ import smtplib
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from html import escape as html_escape
 
 from app.config import settings
 
@@ -41,19 +42,22 @@ def send_password_reset_email(to_email: str, name: str, reset_url: str) -> None:
         "— The MindBridge Team"
     )
 
+    safe_name = html_escape(name)
+    safe_url = html_escape(reset_url)
+
     html = f"""<!DOCTYPE html>
 <html>
 <body style="background:#0D0F14;color:#F0F2F5;font-family:Inter,Arial,sans-serif;padding:40px 20px;margin:0">
   <div style="max-width:480px;margin:0 auto">
     <h2 style="color:#00C9A7;margin:0 0 4px">MindBridge</h2>
     <h3 style="color:#F0F2F5;margin:0 0 24px">Reset your password</h3>
-    <p style="color:#8B949E;line-height:1.6;margin:0 0 12px">Hi {name},</p>
+    <p style="color:#8B949E;line-height:1.6;margin:0 0 12px">Hi {safe_name},</p>
     <p style="color:#8B949E;line-height:1.6;margin:0 0 24px">
       You requested a password reset. Click the button below to create a new password.
       This link expires in <strong style="color:#F0F2F5">1 hour</strong>.
     </p>
     <div style="text-align:center;margin:32px 0">
-      <a href="{reset_url}"
+      <a href="{safe_url}"
          style="background:linear-gradient(135deg,#00C9A7,#7B61FF);color:#0D0F14;font-weight:700;
                 font-size:15px;padding:14px 32px;border-radius:50px;text-decoration:none;display:inline-block">
         Reset Password

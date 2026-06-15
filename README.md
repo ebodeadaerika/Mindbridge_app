@@ -115,7 +115,7 @@ docker compose up --build
 | API Swagger | http://localhost:8000/docs |
 | Frontend | http://localhost:5173 (run separately) |
 | Prometheus | http://localhost:9090 |
-| Grafana | http://localhost:3001 — admin / mindbridge123 |
+| Grafana | http://localhost:3001 — admin / (GRAFANA_ADMIN_PASSWORD from .env) |
 
 ### Option 2 — Manual Setup
 
