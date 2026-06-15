@@ -5,6 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { BarChart2, TrendingUp, AlertTriangle, MessageSquare } from 'lucide-react';
 import { moodApi, crisisApi, forumApi } from '@/api/client';
 import AdminBottomNav from '@/components/AdminBottomNav';
+import PageShell from '@/components/ui/PageShell';
+import { formatToday } from '@/utils/formatters';
+import { SEVERITY_COLORS } from '@/constants/severity';
 import {
   BarChart,
   Bar,
@@ -17,10 +20,6 @@ import {
 import type { CrisisFlag, MoodTrends } from '@/types';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-function formatDate(): string {
-  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-}
 
 function todayDayIndex(): number {
   return (new Date().getDay() + 6) % 7; // 0=Mon, 6=Sun
@@ -79,17 +78,8 @@ export default function AdminDashboard() {
     { label: 'Forum Posts', value: forumPostCount !== null ? forumPostCount : '—', icon: MessageSquare, color: '#FFB347', bg: 'rgba(255,179,71,0.12)' },
   ];
 
-  const severityColors: Record<string, string> = {
-    low: '#FFD60A',
-    medium: '#FFB347',
-    high: '#FF5C5C',
-  };
-
   return (
-    <div
-      className="w-full h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#0D0F14' }}
-    >
+    <PageShell>
       <div className="flex-1 overflow-y-auto px-5 md:px-8 pb-20 md:pb-8">
         <div className="max-w-5xl mx-auto w-full">
         {/* Header */}
@@ -99,7 +89,7 @@ export default function AdminDashboard() {
               Admin Panel
             </h1>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px', color: '#8B949E' }}>
-              Today, {formatDate()}
+              Today, {formatToday()}
             </p>
           </div>
           <div style={{ position: 'relative' }}>
@@ -275,7 +265,7 @@ export default function AdminDashboard() {
                     borderRadius: 16,
                     padding: '14px 16px',
                     border: '1px solid #30363D',
-                    borderLeft: `4px solid ${severityColors[flag.severity] || '#FF5C5C'}`,
+                    borderLeft: `4px solid ${SEVERITY_COLORS[flag.severity] || '#FF5C5C'}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -285,8 +275,8 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2 mb-1">
                       <span
                         style={{
-                          backgroundColor: `${severityColors[flag.severity]}20`,
-                          color: severityColors[flag.severity],
+                          backgroundColor: `${SEVERITY_COLORS[flag.severity]}20`,
+                          color: SEVERITY_COLORS[flag.severity],
                           fontFamily: 'Inter, sans-serif',
                           fontSize: '11px',
                           fontWeight: 700,
@@ -333,6 +323,6 @@ export default function AdminDashboard() {
       </div>
 
       <AdminBottomNav />
-    </div>
+    </PageShell>
   );
 }

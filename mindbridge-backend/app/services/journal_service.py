@@ -11,6 +11,7 @@ from uuid import UUID
 from app.models.journal import JournalEntry
 from app.models.user import User
 from app.schemas.journal import JournalEntryCreate, JournalEntryUpdate, JournalEntryResponse, JournalListResponse
+from app.utils.db import get_or_404
 
 
 def create_entry(db: Session, user: User, data: JournalEntryCreate) -> JournalEntryResponse:
@@ -74,8 +75,8 @@ def _get_and_verify(db: Session, user: User, entry_id: UUID) -> JournalEntry:
     Internal helper — fetch entry by ID and verify it belongs to the requesting user.
     Returns 404 (not 403) to avoid confirming existence to unauthorized users.
     """
-    entry = db.query(JournalEntry).filter(JournalEntry.id == entry_id).first()
-    if not entry or entry.user_id != user.id:
+    entry = get_or_404(db, JournalEntry, entry_id, detail="Journal entry not found")
+    if entry.user_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Journal entry not found",

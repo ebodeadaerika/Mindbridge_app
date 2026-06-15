@@ -10,6 +10,7 @@ from uuid import UUID
 
 from app.models.crisis import CrisisFlag
 from app.schemas.crisis import CrisisFlagCreate, CrisisResolve, CrisisFlagResponse, CrisisListResponse
+from app.utils.db import get_or_404
 
 
 def submit_flag(db: Session, data: CrisisFlagCreate) -> CrisisFlagResponse:
@@ -52,9 +53,7 @@ def list_alerts(db: Session, resolved: bool = None) -> CrisisListResponse:
 
 def resolve_flag(db: Session, flag_id: UUID, data: CrisisResolve) -> CrisisFlagResponse:
     """Mark a crisis flag as resolved with an optional admin note (FR-30)."""
-    flag = db.query(CrisisFlag).filter(CrisisFlag.id == flag_id).first()
-    if not flag:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Crisis flag not found")
+    flag = get_or_404(db, CrisisFlag, flag_id, detail="Crisis flag not found")
 
     if flag.resolved:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="This flag is already resolved")

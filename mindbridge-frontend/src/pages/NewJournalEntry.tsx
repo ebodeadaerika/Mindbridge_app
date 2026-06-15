@@ -3,10 +3,8 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { journalApi } from '@/api/client';
-
-function wordCount(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length;
-}
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import { wordCount } from '@/utils/formatters';
 
 export default function NewJournalEntry() {
   const navigate = useNavigate();

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Shield, Eye, EyeOff, CheckCircle2, Circle, AlertTriangle } from 'lucide-react';
 import { authApi } from '@/api/client';
+import { authInputStyle } from '@/styles/shared';
 
 function getStrength(password: string): number {
   let score = 0;
@@ -53,16 +54,8 @@ export default function ResetPassword() {
   };
 
   const inputStyle = (err?: boolean): React.CSSProperties => ({
-    backgroundColor: '#161B22',
-    border: `1px solid ${err ? '#FF5C5C' : '#30363D'}`,
-    borderRadius: '14px',
-    height: '56px',
+    ...authInputStyle(err),
     padding: '0 44px 0 16px',
-    color: '#F0F2F5',
-    fontFamily: 'Inter, sans-serif',
-    fontSize: '15px',
-    width: '100%',
-    outline: 'none',
   });
 
   if (success) {

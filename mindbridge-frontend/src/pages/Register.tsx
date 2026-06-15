@@ -5,6 +5,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { authApi } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
+import { authInputBase, authInputStyle } from '@/styles/shared';
 import type { AuthToken } from '@/types';
 
 interface FormErrors {
@@ -75,24 +76,10 @@ export default function Register() {
     }
   };
 
-  const inputBase: React.CSSProperties = {
-    backgroundColor: '#161B22',
-    border: '1px solid #30363D',
-    borderRadius: '14px',
-    height: '56px',
-    padding: '0 16px 0 44px',
-    color: '#F0F2F5',
-    fontFamily: 'Inter, sans-serif',
-    fontSize: '15px',
-    width: '100%',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-    opacity: loading ? 0.6 : 1,
-  };
-
   const getInputStyle = (field: keyof FormErrors): React.CSSProperties => ({
-    ...inputBase,
-    borderColor: errors[field] ? '#FF5C5C' : '#30363D',
+    ...authInputBase,
+    ...authInputStyle(!!errors[field]),
+    opacity: loading ? 0.6 : 1,
   });
 
   return (

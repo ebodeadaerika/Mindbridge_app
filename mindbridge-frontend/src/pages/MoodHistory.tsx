@@ -2,21 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { moodApi } from '@/api/client';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { MOOD_EMOJIS, MOOD_LABELS } from '@/types';
 import type { MoodLog, MoodHistory as MoodHistoryType } from '@/types';
-
-const MOOD_EMOJIS = ['😞', '😕', '😐', '🙂', '😄'];
-const MOOD_LABELS = ['Very Low', 'Low', 'Okay', 'Good', 'Excellent'];
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function formatDateTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-}
+import PageShell from '@/components/ui/PageShell';
+import BackButton from '@/components/ui/BackButton';
+import { formatDateShort, formatDateWeekday } from '@/utils/formatters';
 
 export default function MoodHistory() {
   const navigate = useNavigate();
@@ -54,25 +47,17 @@ export default function MoodHistory() {
   })();
 
   const chartData = filteredEntries.map((e) => ({
-    date: formatDate(e.date),
+    date: formatDateShort(e.date),
     mood: e.mood_score,
   })).reverse();
 
   const leftBorderColors = ['#00C9A7', '#7B61FF', '#FFB347'];
 
   return (
-    <div
-      className="w-full h-screen relative overflow-hidden flex flex-col"
-      style={{ backgroundColor: '#0D0F14' }}
-    >
+    <PageShell>
       {/* Header */}
       <div className="flex items-center gap-3 px-5 md:px-8 pt-12 md:pt-6 pb-4">
-        <button
-          onClick={() => navigate(-1)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
-        >
-          <ArrowLeft style={{ color: '#F0F2F5', width: 24, height: 24 }} />
-        </button>
+        <BackButton />
         <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 700, fontSize: '22px', color: '#F0F2F5', flex: 1 }}>
           My Mood
         </h1>
@@ -232,7 +217,7 @@ export default function MoodHistory() {
                         {MOOD_LABELS[entry.mood_score - 1]}
                       </p>
                       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '12px', color: '#8B949E' }}>
-                        {formatDateTime(entry.date)}
+                        {formatDateWeekday(entry.date)}
                       </p>
                     </div>
                     {entry.note && (
@@ -248,6 +233,6 @@ export default function MoodHistory() {
         )}
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

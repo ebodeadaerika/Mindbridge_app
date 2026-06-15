@@ -3,7 +3,7 @@ MindBridge — Auth Service
 Business logic for registration, login, JWT creation, profile updates,
 token refresh, and account deletion.
 """
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from jose import jwt, JWTError
@@ -14,6 +14,7 @@ from app.models.user import User, UserRole
 from app.schemas.user import UserRegister, UserLogin, UserUpdate, TokenResponse, UserResponse, RefreshRequest, ForgotPasswordRequest, ResetPasswordRequest
 from app.config import settings
 from app.services import email_service
+from app.utils.tokens import create_jwt_token
 
 
 # ── Password Helpers ────────────────────────────────────────────────────────────
@@ -32,16 +33,11 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def create_access_token(user_id: str, role: str) -> str:
     """Generate a signed JWT access token that expires in ACCESS_TOKEN_EXPIRE_MINUTES."""
-    now = datetime.now(timezone.utc)
-    expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {
-        "sub": str(user_id),
-        "role": role,
-        "type": "access",
-        "exp": expire,
-        "iat": now,
-    }
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return create_jwt_token(
+        user_id, "access",
+        timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+        role=role,
+    )
 
 
 def create_password_reset_token(user_id: str) -> str:
@@ -50,15 +46,7 @@ def create_password_reset_token(user_id: str) -> str:
     The 'type: password_reset' claim prevents use as an access or refresh token.
     Stateless — no DB storage required; expiry is enforced by the JWT itself.
     """
-    now = datetime.now(timezone.utc)
-    expire = now + timedelta(hours=1)
-    payload = {
-        "sub": str(user_id),
-        "type": "password_reset",
-        "exp": expire,
-        "iat": now,
-    }
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return create_jwt_token(user_id, "password_reset", timedelta(hours=1))
 
 
 def create_refresh_token(user_id: str) -> str:
@@ -67,15 +55,10 @@ def create_refresh_token(user_id: str) -> str:
     The 'type: refresh' claim distinguishes it from access tokens so a refresh token
     cannot be used as a Bearer token on protected endpoints.
     """
-    now = datetime.now(timezone.utc)
-    expire = now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-    payload = {
-        "sub": str(user_id),
-        "type": "refresh",
-        "exp": expire,
-        "iat": now,
-    }
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return create_jwt_token(
+        user_id, "refresh",
+        timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+    )
 
 
 def _build_token_response(user: User) -> TokenResponse:

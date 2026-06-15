@@ -4,7 +4,6 @@ Business logic for mood check-ins and trend analytics.
 PRIVACY CRITICAL: anon_token is derived by hashing user_id with a pepper.
 Admins only ever see aggregated statistics — never individual records.
 """
-import hashlib
 from datetime import date, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -13,19 +12,7 @@ from fastapi import HTTPException, status
 from app.models.mood import MoodLog
 from app.models.user import User
 from app.schemas.mood import MoodCheckIn, MoodLogResponse, MoodHistoryResponse, MoodTrendsResponse
-from app.config import settings
-
-
-def _generate_anon_token(user_id: str) -> str:
-    """
-    Derive an anonymous, non-reversible token from a user's ID.
-    Uses HMAC-SHA256 with the app's SECRET_KEY as pepper.
-    This makes it impossible to reverse-engineer the user_id from the token
-    even with access to the database (FR-12, NFR-07).
-    """
-    pepper = settings.SECRET_KEY
-    combined = f"{pepper}:{user_id}"
-    return hashlib.sha256(combined.encode()).hexdigest()
+from app.utils.privacy import generate_anon_token
 
 
 def submit_checkin(db: Session, user: User, data: MoodCheckIn) -> MoodLogResponse:
@@ -34,7 +21,7 @@ def submit_checkin(db: Session, user: User, data: MoodCheckIn) -> MoodLogRespons
     Enforces one check-in per day via the DB unique constraint (FR-11).
     Stores anon_token — never user_id (FR-12).
     """
-    anon_token = _generate_anon_token(str(user.id))
+    anon_token = generate_anon_token(str(user.id))
     today = date.today()
 
     # Check if already checked in today
@@ -67,7 +54,7 @@ def get_history(db: Session, user: User) -> MoodHistoryResponse:
     Return the authenticated student's own mood history (FR-13).
     Uses anon_token to fetch without exposing user_id.
     """
-    anon_token = _generate_anon_token(str(user.id))
+    anon_token = generate_anon_token(str(user.id))
     entries = (
         db.query(MoodLog)
         .filter(MoodLog.anon_token == anon_token)

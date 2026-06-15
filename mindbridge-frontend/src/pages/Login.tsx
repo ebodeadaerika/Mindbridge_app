@@ -6,6 +6,7 @@ import { Mail, Lock, Eye, EyeOff, Building2 } from 'lucide-react';
 import BrainBridgeLogo from '@/components/BrainBridgeLogo';
 import { authApi } from '@/api/client';
 import { useAuth } from '@/context/AuthContext';
+import { authInputStyle } from '@/styles/shared';
 import type { AuthToken } from '@/types';
 
 export default function Login() {
@@ -47,19 +48,7 @@ export default function Login() {
     }
   };
 
-  const inputStyle = (hasError: boolean): React.CSSProperties => ({
-    backgroundColor: '#161B22',
-    border: `1px solid ${hasError ? '#FF5C5C' : '#30363D'}`,
-    borderRadius: '14px',
-    height: '56px',
-    padding: '0 16px 0 44px',
-    color: '#F0F2F5',
-    fontFamily: 'Inter, sans-serif',
-    fontSize: '15px',
-    width: '100%',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-  });
+  const inputStyle = authInputStyle;
 
   return (
     <div

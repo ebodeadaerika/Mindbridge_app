@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail } from 'lucide-react';
 import { authApi } from '@/api/client';
+import { authInputBase } from '@/styles/shared';
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -131,18 +132,7 @@ export default function ForgotPassword() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  style={{
-                    backgroundColor: '#161B22',
-                    border: '1px solid #30363D',
-                    borderRadius: '14px',
-                    height: '56px',
-                    padding: '0 16px 0 44px',
-                    color: '#F0F2F5',
-                    fontFamily: 'Inter, sans-serif',
-                    fontSize: '15px',
-                    width: '100%',
-                    outline: 'none',
-                  }}
+                  style={authInputBase}
                 />
               </div>
 
